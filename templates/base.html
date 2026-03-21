@@ -1,156 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Beehive Of AI{% endblock %}</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Beehive Of AI{% endblock %}</title>
+  <style>
+    /* ── Reset & Variables ────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold:    #F5A623;
+      --gold-d:  #D4891A;
+      --brown:   #4A3728;
+      --brown-l: #6B5344;
+      --cream:   #FFF8E7;
+      --cream-d: #F5EDD4;
+      --green:   #4CAF50;
+      --red:     #E53935;
+      --blue:    #1E88E5;
+      --orange:  #FF9800;
+      --shadow:  0 2px 12px rgba(74,55,40,0.13);
+      --radius:  10px;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--brown);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: var(--gold-d); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #FFF8E7;
-            color: #4A3728;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    /* ── Header ───────────────────────────────────── */
+    header {
+      background: var(--brown);
+      color: #fff;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .logo:hover { text-decoration: none; color: var(--gold); }
+    nav { display: flex; align-items: center; gap: 0.25rem; }
+    nav a {
+      color: #e8ddd0;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: var(--brown-l); color: #fff; text-decoration: none; }
+    nav a.btn-nav {
+      background: var(--gold);
+      color: var(--brown);
+      font-weight: 600;
+    }
+    nav a.btn-nav:hover { background: var(--gold-d); color: var(--brown); }
+    .nav-sep { color: #6B5344; margin: 0 0.15rem; }
 
-        /* ── Header ── */
-        header {
-            background-color: #4A3728;
-            padding: 0 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
+    /* ── Flash messages ───────────────────────────── */
+    .flash-container { max-width: 960px; margin: 1rem auto 0; padding: 0 1rem; width: 100%; }
+    .alert {
+      padding: 0.75rem 1.1rem;
+      border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .alert-success { background: #E8F5E9; color: #2E7D32; border-left: 4px solid var(--green); }
+    .alert-danger  { background: #FFEBEE; color: #C62828; border-left: 4px solid var(--red); }
+    .alert-warning { background: #FFF8E1; color: #E65100; border-left: 4px solid var(--orange); }
+    .alert-info    { background: #E3F2FD; color: #1565C0; border-left: 4px solid var(--blue); }
 
-        .header-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 64px;
-        }
+    /* ── Main content ─────────────────────────────── */
+    main { flex: 1; padding: 1.5rem 1rem 2rem; max-width: 1000px; margin: 0 auto; width: 100%; }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #F5A623;
-            text-decoration: none;
-            letter-spacing: 0.5px;
-        }
+    /* ── Cards ────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .card-header {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--brown);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--cream-d);
+    }
 
-        /* ── Navigation ── */
-        nav {
-            display: flex;
-            gap: 0.25rem;
-        }
+    /* ── Buttons ──────────────────────────────────── */
+    .btn {
+      display: inline-block;
+      padding: 0.55rem 1.2rem;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: center;
+      transition: filter 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .btn:hover { filter: brightness(1.08); transform: translateY(-1px); text-decoration: none; }
+    .btn:active { transform: translateY(0); }
+    .btn-gold    { background: var(--gold); color: var(--brown); }
+    .btn-brown   { background: var(--brown); color: #fff; }
+    .btn-green   { background: var(--green); color: #fff; }
+    .btn-red     { background: var(--red); color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid var(--gold); color: var(--brown); }
+    .btn-sm { padding: 0.35rem 0.85rem; font-size: 0.85rem; }
+    .btn-lg { padding: 0.75rem 1.75rem; font-size: 1.05rem; }
 
-        nav a {
-            color: #FFF8E7;
-            text-decoration: none;
-            padding: 0.4rem 0.9rem;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            transition: background 0.2s, color 0.2s;
-        }
+    /* ── Forms ────────────────────────────────────── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: var(--brown);
+      font-size: 0.92rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid #d0c4b4;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: var(--brown);
+      transition: border-color 0.15s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245,166,35,0.18);
+    }
+    textarea.form-control { resize: vertical; min-height: 120px; }
+    .field-error { color: var(--red); font-size: 0.83rem; margin-top: 0.25rem; }
 
-        nav a:hover {
-            background-color: #F5A623;
-            color: #4A3728;
-        }
+    /* ── Badges ───────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .badge-gold   { background: #FFF3CD; color: #856404; }
+    .badge-green  { background: #D4EDDA; color: #155724; }
+    .badge-red    { background: #F8D7DA; color: #721C24; }
+    .badge-blue   { background: #D1ECF1; color: #0C5460; }
+    .badge-brown  { background: var(--cream-d); color: var(--brown); }
 
-        /* ── Main content ── */
-        main {
-            flex: 1;
-            max-width: 1100px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 2.5rem 1.5rem;
-        }
+    /* ── Grid helpers ─────────────────────────────── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    @media (max-width: 768px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      nav a { padding: 0.4rem 0.5rem; font-size: 0.82rem; }
+      header { height: auto; padding: 0.5rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+    }
 
-        /* ── Footer ── */
-        footer {
-            background-color: #4A3728;
-            color: #FFF8E7;
-            text-align: center;
-            padding: 1.2rem 1rem;
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
+    /* ── Misc ─────────────────────────────────────── */
+    .text-center { text-align: center; }
+    .text-muted  { color: #8a7260; font-size: 0.88rem; }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .flex { display: flex; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .flex-gap { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
-        /* ── Utility classes ── */
-        .btn {
-            display: inline-block;
-            background-color: #F5A623;
-            color: #4A3728;
-            padding: 0.65rem 1.6rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
+    /* ── Stars ────────────────────────────────────── */
+    .stars { color: var(--gold); font-size: 1rem; letter-spacing: 1px; }
 
-        .btn:hover {
-            background-color: #e0941a;
-            transform: translateY(-1px);
-        }
+    /* ── Trust bar ────────────────────────────────── */
+    .trust-bar-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .trust-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--cream-d);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .trust-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--green));
+      border-radius: 99px;
+    }
 
-        .btn-outline {
-            background-color: transparent;
-            border: 2px solid #F5A623;
-            color: #F5A623;
-        }
+    /* ── Progress steps ───────────────────────────── */
+    .progress-steps { display: flex; align-items: flex-start; gap: 0; margin: 1.25rem 0; }
+    .step {
+      flex: 1;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0 0.15rem;
+      position: relative;
+      color: #b0a090;
+    }
+    .step.done   { color: var(--green); }
+    .step.active { color: var(--gold-d); font-weight: 700; }
+    .step-dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--cream-d);
+      border: 2px solid #c8b89a;
+      margin: 0 auto 0.3rem;
+    }
+    .step.done .step-dot   { background: var(--green); border-color: var(--green); }
+    .step.active .step-dot { background: var(--gold); border-color: var(--gold-d); }
+    .step-connector {
+      position: absolute;
+      top: 10px;
+      left: calc(50% + 12px);
+      width: calc(100% - 24px);
+      height: 2px;
+      background: var(--cream-d);
+    }
+    .step.done .step-connector { background: var(--green); }
 
-        .btn-outline:hover {
-            background-color: #F5A623;
-            color: #4A3728;
-        }
+    /* ── Stat boxes ───────────────────────────────── */
+    .stat-box {
+      background: var(--cream-d);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-box .stat-val { font-size: 2rem; font-weight: 700; color: var(--brown); }
+    .stat-box .stat-lbl { font-size: 0.8rem; color: #8a7260; margin-top: 0.2rem; }
 
-        .card {
-            background: #fff;
-            border: 1px solid #e8dcc8;
-            border-radius: 12px;
-            padding: 1.75rem;
-            box-shadow: 0 2px 8px rgba(74,55,40,0.07);
-        }
+    /* ── Hero ─────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--brown) 0%, #6B5344 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .hero h1 { font-size: 2.4rem; margin-bottom: 0.75rem; line-height: 1.2; }
+    .hero p  { font-size: 1.1rem; color: #e8ddd0; max-width: 600px; margin: 0 auto 1.5rem; }
 
-        .section-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #4A3728;
-            margin-bottom: 1rem;
-        }
-    </style>
+    /* ── Role cards ───────────────────────────────── */
+    .role-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+      border-top: 4px solid var(--gold);
+    }
+    .role-card .role-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .role-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .role-card p  { font-size: 0.88rem; color: #6B5344; }
+
+    /* ── Table ────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.6rem 0.85rem; text-align: left; border-bottom: 1px solid var(--cream-d); }
+    th { font-weight: 700; font-size: 0.85rem; color: var(--brown-l); background: var(--cream-d); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--cream); }
+
+    /* ── Footer ───────────────────────────────────── */
+    footer {
+      background: var(--brown);
+      color: #c8b89a;
+      text-align: center;
+      padding: 1.1rem;
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--gold); }
+  </style>
 </head>
 <body>
 
 <header>
-    <div class="header-inner">
-        <a href="/" class="logo">🐝 Beehive Of AI</a>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/about">About</a>
-            <a href="/hives">Browse Hives</a>
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-        </nav>
-    </div>
+  <a href="{{ url_for('home') }}" class="logo">🐝 Beehive Of AI</a>
+  <nav>
+    <a href="{{ url_for('home') }}">Home</a>
+    <a href="{{ url_for('about') }}">About</a>
+    <a href="{{ url_for('hives') }}">Browse Hives</a>
+    {% if current_user.is_authenticated %}
+      <span class="nav-sep">|</span>
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('profile', user_id=current_user.id) }}">{{ current_user.username }}</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+      <span class="nav-sep">|</span>
+      <a href="{{ url_for('login') }}">Login</a>
+      <a href="{{ url_for('register') }}" class="btn-nav">Register</a>
+    {% endif %}
+  </nav>
 </header>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          {% if category == 'success' %}✅{% elif category == 'danger' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
 <main>
-    {% block content %}{% endblock %}
+  {% block content %}{% endblock %}
 </main>
 
 <footer>
-    &copy; 2025 Beehive Of AI &mdash; Personal Computers Working Together as One Powerful AI
+  <p>🐝 &copy; 2026 Beehive Of AI &mdash; Distributed AI Processing Platform &nbsp;|&nbsp;
+    <a href="{{ url_for('about') }}">About</a> &nbsp;|&nbsp;
+    <a href="{{ url_for('api_status') }}">API Status</a>
+  </p>
 </footer>
 
 </body>

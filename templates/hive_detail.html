@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}{{ hive.name }} — Beehive Of AI{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="card" style="background:linear-gradient(135deg,var(--brown),#6B5344);color:#fff;padding:2rem">
+  <div class="flex-between mb-1">
+    <div>
+      <span class="badge badge-gold" style="margin-bottom:0.5rem">
+        {% if hive.specialty == 'general' %}🧠{% elif hive.specialty == 'coding' %}💻{% elif hive.specialty == 'research' %}🔬{% else %}🎨{% endif %}
+        {{ hive.specialty|title }}
+      </span>
+      <h1 style="font-size:1.8rem;margin-bottom:0.25rem">{{ hive.name }}</h1>
+      <p style="color:#e8ddd0;font-size:0.95rem">
+        Led by <a href="{{ url_for('profile', user_id=hive.queen_id) }}" style="color:var(--gold);font-weight:700">👑 {{ hive.queen.username }}</a>
+        &nbsp;·&nbsp; Est. {{ hive.created_at.strftime('%B %Y') }}
+      </p>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:2rem;font-weight:700;color:var(--gold)">${{ "%.2f"|format(hive.price_per_job) }}</div>
+      <div style="font-size:0.85rem;color:#e8ddd0">per job</div>
+    </div>
+  </div>
+  <p style="color:#e8ddd0;max-width:700px">{{ hive.description }}</p>
+</div>
+
+<!-- Stats -->
+<div class="grid-3 mb-2" style="margin-top:-0.5rem">
+  <div class="stat-box">
+    <div class="stat-val">🐝 {{ hive.worker_count }}/{{ hive.max_workers }}</div>
+    <div class="stat-lbl">Active Workers</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-val">🍯 {{ hive.total_jobs_completed }}</div>
+    <div class="stat-lbl">Jobs Completed</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-val">⭐ {{ "%.1f"|format(hive.trust_score) }}</div>
+    <div class="stat-lbl">Trust Score</div>
+  </div>
+</div>
+
+<!-- Main grid -->
+<div class="grid-2" style="align-items:start">
+
+  <!-- Left: Info -->
+  <div>
+    <!-- Models -->
+    <div class="card">
+      <div class="card-header">🤖 AI Models</div>
+      <table>
+        <tr>
+          <td><strong>Family</strong></td>
+          <td>{{ hive.model_family|upper }}</td>
+        </tr>
+        <tr>
+          <td><strong>Worker Model</strong></td>
+          <td><code style="background:var(--cream-d);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.85rem">{{ hive.worker_model }}</code></td>
+        </tr>
+        <tr>
+          <td><strong>Queen Model</strong></td>
+          <td><code style="background:var(--cream-d);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.85rem">{{ hive.queen_model }}</code></td>
+        </tr>
+        <tr>
+          <td><strong>Max Workers</strong></td>
+          <td>{{ hive.max_workers }}</td>
+        </tr>
+        <tr>
+          <td><strong>Status</strong></td>
+          <td>
+            <span class="badge {% if hive.status == 'active' %}badge-green{% else %}badge-red{% endif %}">
+              {{ hive.status|title }}
+            </span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Recent jobs -->
+    {% if recent_jobs %}
+    <div class="card">
+      <div class="card-header">🍯 Recent Jobs</div>
+      {% for job in recent_jobs %}
+        <div style="padding:0.5rem 0;border-bottom:1px solid var(--cream-d);font-size:0.88rem">
+          <div class="flex-between">
+            <span style="color:#8a7260">{{ job.created_at.strftime('%b %d, %Y') }}</span>
+            <span class="badge {% if job.status == 'completed' %}badge-green{% elif job.status == 'failed' %}badge-red{% else %}badge-gold{% endif %}">
+              {{ job.status }}
+            </span>
+          </div>
+          <p style="margin-top:0.2rem;color:var(--brown)">{{ job.nectar[:80] }}{% if job.nectar|length > 80 %}…{% endif %}</p>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right: Members & Actions -->
+  <div>
+    <!-- Action buttons -->
+    {% if current_user.is_authenticated %}
+      {% if current_user.role == 'worker' %}
+        {% if is_member %}
+          <div class="card" style="text-align:center">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem">✅</div>
+            <p class="mb-1"><strong>You're a member of this Hive!</strong></p>
+            <form method="POST" action="{{ url_for('leave_hive', hive_id=hive.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline btn-sm">Leave Hive</button>
+            </form>
+          </div>
+        {% elif hive.is_full %}
+          <div class="card" style="text-align:center">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem">🔒</div>
+            <p class="text-muted">This Hive is full. Check back later or browse other Hives.</p>
+            <div class="mt-1"><a href="{{ url_for('hives') }}" class="btn btn-gold btn-sm">Browse Other Hives</a></div>
+          </div>
+        {% else %}
+          <div class="card" style="text-align:center">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem">🐝</div>
+            <p class="mb-1"><strong>Ready to join this Hive?</strong></p>
+            <p class="text-muted mb-1" style="font-size:0.85rem">Start processing tasks and earning money.</p>
+            <form method="POST" action="{{ url_for('join_hive', hive_id=hive.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-gold">🐝 Join This Hive</button>
+            </form>
+          </div>
+        {% endif %}
+
+      {% elif current_user.role == 'beekeeper' %}
+        <div class="card" style="text-align:center">
+          <div style="font-size:1.5rem;margin-bottom:0.5rem">🍯</div>
+          <p class="mb-1"><strong>Submit a task to this Hive</strong></p>
+          <p class="text-muted mb-1" style="font-size:0.85rem">Price: ${{ "%.2f"|format(hive.price_per_job) }} per job</p>
+          <a href="{{ url_for('submit_job', hive_id=hive.id) }}" class="btn btn-gold">🍯 Submit a Job</a>
+        </div>
+
+      {% elif current_user.id == hive.queen_id %}
+        <div class="card">
+          <div class="card-header">👑 Queen Controls</div>
+          <p class="text-muted mb-1" style="font-size:0.85rem">You manage this Hive.</p>
+          <div class="flex-gap">
+            <span class="badge badge-green">Active Queen</span>
+          </div>
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="card text-center">
+        <p class="mb-1">Log in to join this Hive or submit a job.</p>
+        <div class="flex-gap" style="justify-content:center">
+          <a href="{{ url_for('login') }}" class="btn btn-brown btn-sm">Login</a>
+          <a href="{{ url_for('register') }}" class="btn btn-gold btn-sm">Register</a>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Member list -->
+    <div class="card">
+      <div class="card-header">🐝 Members ({{ members|length }})</div>
+      {% if members %}
+        {% for m in members %}
+          <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid var(--cream-d)">
+            <div style="width:36px;height:36px;background:var(--cream-d);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem">
+              {% if m.role == 'queen' %}👑{% else %}🐝{% endif %}
+            </div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:0.9rem">
+                <a href="{{ url_for('profile', user_id=m.user_id) }}">{{ m.user.username }}</a>
+              </div>
+              <div class="text-muted" style="font-size:0.78rem">
+                {{ m.role|title }} &nbsp;·&nbsp; ⭐ {{ "%.1f"|format(m.user.trust_score) }}
+              </div>
+            </div>
+            <div style="font-size:0.8rem;color:#8a7260">
+              Joined {{ m.joined_at.strftime('%b %Y') }}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No active members yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

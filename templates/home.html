@@ -1,186 +1,106 @@
 {% extends "base.html" %}
-{% block title %}Beehive Of AI — Home{% endblock %}
+{% block title %}Beehive Of AI — Distributed AI Processing{% endblock %}
 
 {% block content %}
-<style>
-    .hero {
-        text-align: center;
-        padding: 3.5rem 1rem 3rem;
-    }
-
-    .hero h1 {
-        font-size: 3rem;
-        font-weight: 800;
-        color: #4A3728;
-        margin-bottom: 0.75rem;
-    }
-
-    .hero .subtitle {
-        font-size: 1.25rem;
-        color: #7a5c48;
-        max-width: 600px;
-        margin: 0 auto 2rem;
-    }
-
-    /* ── Role cards ── */
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin: 2.5rem 0;
-    }
-
-    .role-card {
-        background: #fff;
-        border: 1px solid #e8dcc8;
-        border-radius: 14px;
-        padding: 2rem 1.75rem;
-        box-shadow: 0 2px 10px rgba(74,55,40,0.08);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .role-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 6px 20px rgba(74,55,40,0.13);
-    }
-
-    .role-card .icon {
-        font-size: 2.5rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .role-card h3 {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #4A3728;
-        margin-bottom: 0.6rem;
-    }
-
-    .role-card p {
-        color: #6b4f3a;
-        line-height: 1.6;
-        font-size: 0.97rem;
-    }
-
-    /* ── How it works ── */
-    .how-it-works {
-        background: #fff;
-        border: 1px solid #e8dcc8;
-        border-radius: 14px;
-        padding: 2.5rem 2rem;
-        margin: 2.5rem 0;
-        box-shadow: 0 2px 10px rgba(74,55,40,0.07);
-    }
-
-    .how-it-works h2 {
-        font-size: 1.7rem;
-        font-weight: 700;
-        color: #4A3728;
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .steps {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        max-width: 680px;
-        margin: 0 auto;
-    }
-
-    .step {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .step-num {
-        background: #F5A623;
-        color: #4A3728;
-        font-weight: 800;
-        font-size: 0.95rem;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        margin-top: 2px;
-    }
-
-    .step p {
-        line-height: 1.6;
-        color: #4A3728;
-        font-size: 0.97rem;
-    }
-
-    .cta {
-        text-align: center;
-        margin-top: 2.5rem;
-    }
-
-    .cta .btn {
-        font-size: 1.1rem;
-        padding: 0.8rem 2.2rem;
-    }
-</style>
 
 <!-- Hero -->
 <div class="hero">
-    <h1>🐝 Beehive Of AI</h1>
-    <p class="subtitle">Personal Computers Working Together as One Powerful AI</p>
-    <a href="/register" class="btn">Join the Hive</a>
+  <h1>🐝 The Hive Is Open</h1>
+  <p>Beehive Of AI connects companies that need AI processing with home computer owners who have idle power — run by trusted team managers called Queen Bees.</p>
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('dashboard') }}" class="btn btn-gold btn-lg">Go to Dashboard →</a>
+  {% else %}
+    <a href="{{ url_for('register') }}" class="btn btn-gold btn-lg">Get Started — It's Free</a>
+    &nbsp;
+    <a href="{{ url_for('hives') }}" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">Browse Hives</a>
+  {% endif %}
 </div>
 
-<!-- Role Cards -->
-<div class="cards-grid">
-    <div class="role-card">
-        <div class="icon">🏢</div>
-        <h3>For Companies (Beekeepers)</h3>
-        <p>Get affordable AI processing by tapping into a network of distributed computers. Pay only for what you use — no expensive cloud subscriptions.</p>
+<!-- Role cards -->
+<div class="grid-3 mb-2">
+  <div class="role-card">
+    <div class="role-icon">🐝</div>
+    <h3>Worker Bee</h3>
+    <p>Share your computer's idle GPU/CPU and earn real money processing AI sub-tasks. Join a Hive and let your machine work while you sleep.</p>
+    <div class="mt-2">
+      <a href="{{ url_for('register') }}" class="btn btn-gold btn-sm">Start Earning</a>
     </div>
-    <div class="role-card">
-        <div class="icon">💻</div>
-        <h3>For Computer Owners (Worker Bees)</h3>
-        <p>Earn money by sharing your computer's idle AI power. Your computer works while you sleep, and the earnings add up automatically.</p>
+  </div>
+  <div class="role-card" style="border-top-color:#8B5CF6">
+    <div class="role-icon">👑</div>
+    <h3>Queen Bee</h3>
+    <p>Build and lead a Hive of Worker Bees. You coordinate tasks, manage quality, and earn a commission on every job your team completes.</p>
+    <div class="mt-2">
+      <a href="{{ url_for('register') }}" class="btn btn-sm" style="background:#8B5CF6;color:#fff">Create a Hive</a>
     </div>
-    <div class="role-card">
-        <div class="icon">👑</div>
-        <h3>For Team Managers (Queen Bees)</h3>
-        <p>Lead a team of distributed computers. Earn more by orchestrating AI tasks — splitting work across your Worker Bees and delivering polished results.</p>
+  </div>
+  <div class="role-card" style="border-top-color:#1E88E5">
+    <div class="role-icon">🏢</div>
+    <h3>Beekeeper</h3>
+    <p>Submit AI tasks — from document analysis to code generation — and get back results produced by an ensemble of AI models.</p>
+    <div class="mt-2">
+      <a href="{{ url_for('register') }}" class="btn btn-sm" style="background:#1E88E5;color:#fff">Submit a Job</a>
     </div>
+  </div>
 </div>
 
-<!-- How It Works -->
-<div class="how-it-works">
-    <h2>How It Works</h2>
-    <div class="steps">
-        <div class="step">
-            <div class="step-num">1</div>
-            <p>A <strong>Beekeeper</strong> submits a <strong>Nectar</strong> (question or task) to a <strong>Hive</strong>.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">2</div>
-            <p>The <strong>Queen Bee</strong> splits the Nectar into small <strong>Sub-tasks</strong>.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">3</div>
-            <p>Each <strong>Worker Bee</strong> processes one Sub-task using their local AI model.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">4</div>
-            <p>The <strong>Queen Bee</strong> combines all answers into <strong>Honey</strong> (the final result).</p>
-        </div>
-        <div class="step">
-            <div class="step-num">5</div>
-            <p>The <strong>Honey</strong> is delivered back to the <strong>Beekeeper</strong>.</p>
-        </div>
+<!-- How it works -->
+<div class="card">
+  <div class="card-header">🍯 How It Works</div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;text-align:center;padding:0.5rem 0">
+    <div>
+      <div style="font-size:1.8rem;margin-bottom:0.4rem">📝</div>
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:0.3rem">1. Submit</div>
+      <div style="font-size:0.8rem;color:#8a7260">Beekeeper submits a task (Nectar) to a Hive</div>
     </div>
+    <div style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#c8b89a">→</div>
+    <div>
+      <div style="font-size:1.8rem;margin-bottom:0.4rem">✂️</div>
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:0.3rem">2. Split</div>
+      <div style="font-size:0.8rem;color:#8a7260">Queen Bee AI breaks task into sub-tasks</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#c8b89a">→</div>
+    <div>
+      <div style="font-size:1.8rem;margin-bottom:0.4rem">⚡</div>
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:0.3rem">3. Process</div>
+      <div style="font-size:0.8rem;color:#8a7260">Worker Bees process sub-tasks in parallel</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;text-align:center;padding:0.5rem 0;max-width:500px;margin:0 auto">
+    <div>
+      <div style="font-size:1.8rem;margin-bottom:0.4rem">🔗</div>
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:0.3rem">4. Combine</div>
+      <div style="font-size:0.8rem;color:#8a7260">Queen AI merges all results</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#c8b89a">→</div>
+    <div>
+      <div style="font-size:1.8rem;margin-bottom:0.4rem">🍯</div>
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:0.3rem">5. Deliver</div>
+      <div style="font-size:0.8rem;color:#8a7260">Beekeeper receives the Honey (result)</div>
+    </div>
+  </div>
 </div>
 
-<!-- CTA -->
-<div class="cta">
-    <a href="/register" class="btn">Get Started — It's Free</a>
+<!-- Stats teaser -->
+<div class="grid-3">
+  <div class="stat-box">
+    <div class="stat-val">🌍</div>
+    <div class="stat-lbl">Global Network</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-val">⚡</div>
+    <div class="stat-lbl">Fault-Tolerant Processing</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-val">💰</div>
+    <div class="stat-lbl">Fair Pay for Workers</div>
+  </div>
 </div>
+
+{% if not current_user.is_authenticated %}
+<div class="text-center mt-3">
+  <a href="{{ url_for('register') }}" class="btn btn-brown btn-lg">Join the Hive Today 🐝</a>
+</div>
+{% endif %}
+
 {% endblock %}

@@ -2,103 +2,107 @@
 {% block title %}Browse Hives — Beehive Of AI{% endblock %}
 
 {% block content %}
-<style>
-    .placeholder-page {
-        text-align: center;
-        padding: 4rem 1rem 2rem;
-    }
 
-    .placeholder-page .icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-    }
-
-    .placeholder-page h1 {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #4A3728;
-        margin-bottom: 0.75rem;
-    }
-
-    .placeholder-page .lead {
-        color: #7a5c48;
-        font-size: 1.05rem;
-        max-width: 580px;
-        margin: 0 auto 2rem;
-        line-height: 1.7;
-    }
-
-    .preview-card {
-        background: #fff;
-        border: 1px solid #e8dcc8;
-        border-radius: 14px;
-        padding: 2rem 2.25rem;
-        max-width: 620px;
-        margin: 0 auto;
-        text-align: left;
-        box-shadow: 0 2px 8px rgba(74,55,40,0.07);
-    }
-
-    .preview-card h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #4A3728;
-        margin-bottom: 1rem;
-    }
-
-    .preview-card ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    .preview-card ul li {
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #f0e8d8;
-        color: #4A3728;
-        font-size: 0.97rem;
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-    }
-
-    .preview-card ul li:last-child {
-        border-bottom: none;
-    }
-
-    .badge {
-        display: inline-block;
-        background: #F5A623;
-        color: #4A3728;
-        font-weight: 700;
-        font-size: 0.8rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        margin-top: 1.5rem;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-</style>
-
-<div class="placeholder-page">
-    <div class="icon">🐝</div>
-    <h1>Browse Hives</h1>
-    <p class="lead">
-        Coming Soon in Phase 3 — Here you will be able to see all available Hives (teams),
-        their ratings, which AI models they use, their specialization, and their pricing.
-    </p>
-
-    <div class="preview-card">
-        <h2>What you'll see here:</h2>
-        <ul>
-            <li>⭐ Hive ratings and reviews from past Beekeepers</li>
-            <li>🤖 Which AI models the Hive uses (Llama, Mistral, Gemma...)</li>
-            <li>💰 Pricing per 1,000 tokens processed</li>
-            <li>⚡ Average response time and reliability score</li>
-            <li>🔒 Verified privacy and security certifications</li>
-            <li>🗺️ Geographic location of Worker Bees in the Hive</li>
-        </ul>
-    </div>
-
-    <span class="badge">Phase 3</span>
+<div class="flex-between mb-2">
+  <h2>🐝 Browse Hives</h2>
+  {% if current_user.is_authenticated and current_user.role == 'queen' %}
+    <a href="{{ url_for('create_hive') }}" class="btn btn-gold">+ Create Hive</a>
+  {% endif %}
 </div>
+
+<!-- Filters -->
+<div class="card" style="padding:1rem">
+  <form method="GET" action="{{ url_for('hives') }}" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center">
+    <div>
+      <strong style="font-size:0.88rem;margin-right:0.5rem">Specialty:</strong>
+      {% for val, label in [('all','All'), ('general','🧠 General'), ('coding','💻 Coding'), ('research','🔬 Research'), ('creative','🎨 Creative')] %}
+        <a href="{{ url_for('hives', specialty=val, sort=sort) }}"
+           class="btn btn-sm {% if specialty == val %}btn-brown{% else %}btn-outline{% endif %}"
+           style="margin-right:0.25rem">{{ label }}</a>
+      {% endfor %}
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem">
+      <label style="font-size:0.88rem;font-weight:600">Sort:</label>
+      <select name="sort" onchange="this.form.submit()" class="form-control" style="width:auto;padding:0.35rem 0.75rem">
+        <option value="trust"      {% if sort == 'trust' %}selected{% endif %}>⭐ By Trust Score</option>
+        <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>💰 Price: Low → High</option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>💰 Price: High → Low</option>
+        <option value="workers"    {% if sort == 'workers' %}selected{% endif %}>🐝 Most Jobs Done</option>
+      </select>
+      <input type="hidden" name="specialty" value="{{ specialty }}">
+    </div>
+  </form>
+</div>
+
+<!-- Hive grid -->
+{% if hives %}
+  <div class="grid-3">
+    {% for hive in hives %}
+      <div class="card" style="padding:1.25rem;margin-bottom:0">
+        <!-- Header -->
+        <div class="flex-between mb-1">
+          <span class="badge
+            {% if hive.specialty == 'coding' %}badge-blue
+            {% elif hive.specialty == 'research' %}badge-green
+            {% elif hive.specialty == 'creative' %}badge-gold
+            {% else %}badge-brown{% endif %}">
+            {% if hive.specialty == 'general' %}🧠
+            {% elif hive.specialty == 'coding' %}💻
+            {% elif hive.specialty == 'research' %}🔬
+            {% else %}🎨{% endif %}
+            {{ hive.specialty|title }}
+          </span>
+          <span class="text-muted" style="font-size:0.8rem">{{ hive.model_family|upper }}</span>
+        </div>
+
+        <!-- Name -->
+        <h3 style="font-size:1rem;margin-bottom:0.3rem">
+          <a href="{{ url_for('hive_detail', hive_id=hive.id) }}">{{ hive.name }}</a>
+        </h3>
+        <p class="text-muted" style="font-size:0.82rem;margin-bottom:0.75rem">
+          👑 {{ hive.queen.username }}
+        </p>
+
+        <!-- Description snippet -->
+        <p style="font-size:0.85rem;color:#4A3728;margin-bottom:0.75rem;min-height:2.5rem">
+          {{ hive.description[:90] }}{% if hive.description|length > 90 %}…{% endif %}
+        </p>
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;margin-bottom:0.75rem">
+          <div style="text-align:center;background:var(--cream-d);border-radius:6px;padding:0.4rem">
+            <div style="font-weight:700;font-size:0.95rem">🐝 {{ hive.worker_count }}</div>
+            <div style="font-size:0.7rem;color:#8a7260">workers</div>
+          </div>
+          <div style="text-align:center;background:var(--cream-d);border-radius:6px;padding:0.4rem">
+            <div style="font-weight:700;font-size:0.95rem">🍯 {{ hive.total_jobs_completed }}</div>
+            <div style="font-size:0.7rem;color:#8a7260">jobs done</div>
+          </div>
+          <div style="text-align:center;background:var(--cream-d);border-radius:6px;padding:0.4rem">
+            <div style="font-weight:700;font-size:0.95rem">⭐ {{ "%.1f"|format(hive.trust_score) }}</div>
+            <div style="font-size:0.7rem;color:#8a7260">trust</div>
+          </div>
+        </div>
+
+        <!-- Price & CTA -->
+        <div class="flex-between">
+          <span style="font-weight:700;color:var(--brown)">${{ "%.2f"|format(hive.price_per_job) }}/job</span>
+          <a href="{{ url_for('hive_detail', hive_id=hive.id) }}" class="btn btn-gold btn-sm">View →</a>
+        </div>
+
+        {% if hive.is_full %}
+          <div class="mt-1"><span class="badge badge-red">Full</span></div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card text-center" style="padding:3rem">
+    <div style="font-size:3rem;margin-bottom:1rem">🐝</div>
+    <h3 class="mb-1">No Hives Found</h3>
+    <p class="text-muted mb-2">No active Hives match your filter. Try a different specialty.</p>
+    <a href="{{ url_for('hives') }}" class="btn btn-gold">Show All Hives</a>
+  </div>
+{% endif %}
+
 {% endblock %}

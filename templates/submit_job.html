@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Submit a Job — {{ hive.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width:620px;margin:0 auto">
+  <div class="flex-between mb-2">
+    <h2>🍯 Submit a Job</h2>
+    <a href="{{ url_for('hive_detail', hive_id=hive.id) }}" class="btn btn-outline btn-sm">← Back to Hive</a>
+  </div>
+
+  <!-- Hive info -->
+  <div class="card" style="padding:1rem;margin-bottom:1rem;background:var(--cream-d)">
+    <div class="flex-between">
+      <div>
+        <strong>{{ hive.name }}</strong>
+        <span class="text-muted" style="font-size:0.85rem"> &nbsp;·&nbsp; 👑 {{ hive.queen.username }}</span>
+      </div>
+      <div style="text-align:right">
+        <span style="font-size:1.3rem;font-weight:700;color:var(--brown)">${{ "%.2f"|format(hive.price_per_job) }}</span>
+        <span class="text-muted" style="font-size:0.82rem"> / job</span>
+      </div>
+    </div>
+    <div class="flex-gap mt-1" style="font-size:0.83rem;color:#8a7260">
+      <span>🤖 {{ hive.model_family|upper }}</span>
+      <span>
+        {% if hive.specialty == 'general' %}🧠{% elif hive.specialty == 'coding' %}💻{% elif hive.specialty == 'research' %}🔬{% else %}🎨{% endif %}
+        {{ hive.specialty|title }}
+      </span>
+      <span>🐝 {{ hive.worker_count }} workers</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Describe Your Task (Nectar)</div>
+    <p class="text-muted mb-2" style="font-size:0.88rem">
+      Be as specific as possible. The Queen Bee AI will break your task into sub-tasks and distribute them across Worker Bees.
+    </p>
+    <form method="POST" action="{{ url_for('submit_job', hive_id=hive.id) }}">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.nectar(class="form-control", rows=10) }}
+        {% for error in form.nectar.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div style="background:var(--cream-d);border-radius:8px;padding:0.85rem;margin-bottom:1rem;font-size:0.88rem">
+        <strong>💡 Tips for better results:</strong>
+        <ul style="margin-top:0.4rem;padding-left:1.2rem;color:#6B5344">
+          <li>Describe the expected output format</li>
+          <li>Include any constraints or requirements</li>
+          <li>Provide relevant context or background</li>
+          <li>Minimum 20 characters required</li>
+        </ul>
+      </div>
+
+      {{ form.submit(class="btn btn-gold btn-lg", style="width:100%") }}
+    </form>
+  </div>
+</div>
+{% endblock %}

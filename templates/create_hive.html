@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Create a Hive — Beehive Of AI{% endblock %}
+
+{% block content %}
+<div style="max-width:620px;margin:0 auto">
+  <div class="flex-between mb-2">
+    <h2>👑 Create a New Hive</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+
+  <div class="card">
+    <form method="POST" action="{{ url_for('create_hive') }}">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.name.label }}
+        {{ form.name(class="form-control", placeholder="e.g. DeepSeek Reasoning Hive") }}
+        {% for error in form.name.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+        <p class="text-muted mt-1">A unique, descriptive name for your Hive.</p>
+      </div>
+
+      <div class="form-group">
+        {{ form.description.label }}
+        {{ form.description(class="form-control", rows=4, placeholder="Describe what your Hive specializes in, what kind of tasks it handles, and what makes it unique...") }}
+        {% for error in form.description.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          {{ form.model_family.label }}
+          {{ form.model_family(class="form-control") }}
+          {% for error in form.model_family.errors %}
+            <div class="field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.specialty.label }}
+          {{ form.specialty(class="form-control") }}
+          {% for error in form.specialty.errors %}
+            <div class="field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form.worker_model.label }}
+        {{ form.worker_model(class="form-control", placeholder="e.g. deepseek-r1:70b") }}
+        {% for error in form.worker_model.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+        <p class="text-muted mt-1">The Ollama model name that Worker Bees will run locally.</p>
+      </div>
+
+      <div class="form-group">
+        {{ form.queen_model.label }}
+        {{ form.queen_model(class="form-control", placeholder="e.g. deepseek-r1:671b") }}
+        {% for error in form.queen_model.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+        <p class="text-muted mt-1">The larger model you (the Queen) run to split and combine tasks.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          {{ form.price_per_job.label }}
+          {{ form.price_per_job(class="form-control", placeholder="0.50") }}
+          {% for error in form.price_per_job.errors %}
+            <div class="field-error">{{ error }}</div>
+          {% endfor %}
+          <p class="text-muted mt-1">USD charged per job submitted to your Hive.</p>
+        </div>
+
+        <div class="form-group">
+          {{ form.max_workers.label }}
+          {{ form.max_workers(class="form-control", placeholder="20") }}
+          {% for error in form.max_workers.errors %}
+            <div class="field-error">{{ error }}</div>
+          {% endfor %}
+          <p class="text-muted mt-1">Maximum number of Worker Bees allowed.</p>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        {{ form.submit(class="btn btn-gold btn-lg", style="width:100%") }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

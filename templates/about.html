@@ -2,247 +2,124 @@
 {% block title %}About — Beehive Of AI{% endblock %}
 
 {% block content %}
-<style>
-    .about-hero {
-        text-align: center;
-        padding: 2.5rem 1rem 2rem;
-    }
 
-    .about-hero h1 {
-        font-size: 2.4rem;
-        font-weight: 800;
-        color: #4A3728;
-        margin-bottom: 0.6rem;
-    }
-
-    .about-hero p {
-        font-size: 1.1rem;
-        color: #7a5c48;
-        max-width: 620px;
-        margin: 0 auto;
-    }
-
-    .section {
-        background: #fff;
-        border: 1px solid #e8dcc8;
-        border-radius: 14px;
-        padding: 2rem 2.25rem;
-        margin: 1.75rem 0;
-        box-shadow: 0 2px 8px rgba(74,55,40,0.07);
-    }
-
-    .section h2 {
-        font-size: 1.45rem;
-        font-weight: 700;
-        color: #4A3728;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #F5A623;
-        display: inline-block;
-    }
-
-    .section p {
-        color: #4A3728;
-        line-height: 1.75;
-        margin-bottom: 0.85rem;
-        font-size: 0.98rem;
-    }
-
-    .section p:last-child {
-        margin-bottom: 0;
-    }
-
-    .comparison-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1rem 0;
-        font-size: 0.95rem;
-    }
-
-    .comparison-table th {
-        background-color: #4A3728;
-        color: #FFF8E7;
-        padding: 0.65rem 1rem;
-        text-align: left;
-    }
-
-    .comparison-table td {
-        padding: 0.6rem 1rem;
-        border-bottom: 1px solid #e8dcc8;
-        color: #4A3728;
-    }
-
-    .comparison-table tr:nth-child(even) td {
-        background-color: #FFF8E7;
-    }
-
-    .metaphor-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-
-    .metaphor-item {
-        background: #FFF8E7;
-        border: 1px solid #e8dcc8;
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-    }
-
-    .metaphor-item .emoji {
-        font-size: 2rem;
-        display: block;
-        margin-bottom: 0.4rem;
-    }
-
-    .metaphor-item strong {
-        display: block;
-        color: #4A3728;
-        font-size: 1rem;
-        margin-bottom: 0.3rem;
-    }
-
-    .metaphor-item span {
-        color: #7a5c48;
-        font-size: 0.88rem;
-    }
-</style>
-
-<div class="about-hero">
-    <h1>About Beehive Of AI</h1>
-    <p>A platform that turns idle home computers into a powerful, affordable AI network.</p>
+<div class="hero" style="padding:2.5rem 2rem">
+  <h1>About Beehive Of AI</h1>
+  <p>A distributed AI processing platform that's fault-tolerant by design — because the hive survives even when individual bees don't.</p>
 </div>
 
-<!-- The Problem -->
-<div class="section">
-    <h2>The Problem We Solve</h2>
-    <p>
-        Today, AI exists in two separate worlds. On one side, you have powerful cloud AI — ChatGPT, Gemini, Claude —
-        capable of remarkable things, but expensive for businesses and developers to use at scale.
-        On the other side, you have small local AI models that run on your laptop for free, but are too limited
-        for serious commercial work.
-    </p>
-    <p>
-        Meanwhile, millions of home computers sit idle — especially overnight. They have graphics cards,
-        fast processors, and gigabytes of memory that nobody is using. That's a massive amount of
-        computing power going to waste every single day.
-    </p>
-    <p>
-        <strong>Beehive Of AI bridges that gap.</strong> We connect idle home computers into coordinated teams
-        that can collectively handle AI tasks that no single home computer could do alone — at a fraction
-        of the cost of cloud AI.
-    </p>
-</div>
-
-<!-- How We're Different -->
-<div class="section">
-    <h2>How We're Different</h2>
-    <p>
-        Other distributed AI projects like Petals, EXO, and AI Horde split a <em>single large AI model</em>
-        across multiple computers (model parallelism). This requires all computers to be online at the same
-        time and have identical setups — which is fragile and slow.
-    </p>
-    <p>
-        We do something different: <strong>task parallelism</strong>. Instead of splitting the model,
-        we split the <em>question</em>. Each computer runs its own complete local AI model
-        and handles one piece of the problem independently. The results are then combined into one final answer.
-    </p>
-
-    <table class="comparison-table">
-        <thead>
-            <tr>
-                <th>Feature</th>
-                <th>Others (Petals, EXO)</th>
-                <th>Beehive Of AI</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Approach</td>
-                <td>Split one big model across computers</td>
-                <td>Each computer runs its own model</td>
-            </tr>
-            <tr>
-                <td>Fault tolerance</td>
-                <td>One dropout breaks the chain</td>
-                <td>Other bees continue if one drops</td>
-            </tr>
-            <tr>
-                <td>Setup complexity</td>
-                <td>High — must match layers exactly</td>
-                <td>Low — install Ollama and go</td>
-            </tr>
-            <tr>
-                <td>Task type</td>
-                <td>Single sequential inference</td>
-                <td>Parallel sub-tasks combined at the end</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- The Beehive Metaphor -->
-<div class="section">
-    <h2>The Beehive Metaphor</h2>
-    <p>
-        A real beehive is nature's perfect distributed intelligence system. No bee understands the whole hive —
-        each one just does its small job — yet together they produce honey with remarkable efficiency.
-        We built our entire system around this metaphor.
-    </p>
-
-    <div class="metaphor-grid">
-        <div class="metaphor-item">
-            <span class="emoji">🌸</span>
-            <strong>Nectar</strong>
-            <span>The raw question or task submitted by the client</span>
-        </div>
-        <div class="metaphor-item">
-            <span class="emoji">👑</span>
-            <strong>Queen Bee</strong>
-            <span>Splits tasks and combines results</span>
-        </div>
-        <div class="metaphor-item">
-            <span class="emoji">💻</span>
-            <strong>Worker Bee</strong>
-            <span>Processes one sub-task with local AI</span>
-        </div>
-        <div class="metaphor-item">
-            <span class="emoji">🏠</span>
-            <strong>Hive</strong>
-            <span>A team of coordinated computers</span>
-        </div>
-        <div class="metaphor-item">
-            <span class="emoji">🍯</span>
-            <strong>Honey</strong>
-            <span>The polished, combined final answer</span>
-        </div>
-        <div class="metaphor-item">
-            <span class="emoji">🏢</span>
-            <strong>Beekeeper</strong>
-            <span>The company paying for the AI work</span>
-        </div>
+<!-- Mission -->
+<div class="card">
+  <div class="card-header">🎯 The Problem We're Solving</div>
+  <div class="grid-2" style="gap:1.5rem">
+    <div>
+      <h4 style="margin-bottom:0.5rem">Existing solutions fall short</h4>
+      <p style="font-size:0.9rem;line-height:1.6">Distributed AI projects like Petals and EXO try to split <em>model layers</em> across computers. This means if any single machine goes offline, the entire task fails — and every node needs to be online simultaneously.</p>
     </div>
+    <div>
+      <h4 style="margin-bottom:0.5rem">Our approach: task parallelism</h4>
+      <p style="font-size:0.9rem;line-height:1.6">Beehive Of AI splits the <em>work</em>, not the model. Each Worker Bee runs a complete small model locally. If a worker drops out, another picks up the sub-task. The Queen Bee's larger model handles coordination.</p>
+    </div>
+  </div>
 </div>
 
-<!-- Future Vision -->
-<div class="section">
-    <h2>The Future Vision</h2>
-    <p>
-        We believe AI should not be locked inside expensive data centers owned by a handful of corporations.
-        The computing power already exists in homes everywhere — it just needs to be organized.
-    </p>
-    <p>
-        As AI continues to transform the economy, Beehive Of AI creates a new income stream for everyday people.
-        Your computer becomes a productive asset. Companies get affordable AI. And the AI economy becomes
-        a little more democratic and distributed — just like a beehive.
-    </p>
-    <p>
-        <strong>Phase 1</strong> (now): Build the platform and community. <br>
-        <strong>Phase 2</strong>: Launch the worker network with payments. <br>
-        <strong>Phase 3</strong>: Open the API for businesses. <br>
-        <strong>Phase 4</strong>: Specialized Hives for coding, image generation, data analysis, and more.
-    </p>
+<!-- Comparison table -->
+<div class="card">
+  <div class="card-header">⚖️ How We Compare</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Petals / EXO</th>
+        <th>🐝 Beehive Of AI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Parallelism type</td>
+        <td>Model layer splitting</td>
+        <td>Task splitting</td>
+      </tr>
+      <tr>
+        <td>Fault tolerance</td>
+        <td>❌ Single node failure breaks the chain</td>
+        <td>✅ Workers can drop in/out freely</td>
+      </tr>
+      <tr>
+        <td>Node synchronization</td>
+        <td>❌ All nodes must be online together</td>
+        <td>✅ Asynchronous — workers process independently</td>
+      </tr>
+      <tr>
+        <td>Monetization</td>
+        <td>❌ No built-in payment</td>
+        <td>✅ Workers earn per completed sub-task</td>
+      </tr>
+      <tr>
+        <td>Setup complexity</td>
+        <td>High — requires compatible hardware</td>
+        <td>Low — run any Ollama-compatible model</td>
+      </tr>
+      <tr>
+        <td>Use case</td>
+        <td>Running very large single models</td>
+        <td>Processing tasks at scale with multiple small models</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
+
+<!-- Roles explained -->
+<div class="grid-3 mb-2">
+  <div class="role-card">
+    <div class="role-icon">🐝</div>
+    <h3>Worker Bee</h3>
+    <p>Has a home computer with a GPU. Runs a local Ollama model. Joins a Hive, waits for sub-tasks, processes them, and earns money. Can be offline sometimes — the Hive keeps working without them.</p>
+  </div>
+  <div class="role-card" style="border-top-color:#8B5CF6">
+    <div class="role-icon">👑</div>
+    <h3>Queen Bee</h3>
+    <p>Runs a larger AI model (the Queen model). Receives full tasks from Beekeepers, splits them into sub-tasks, assigns them to Workers, collects results, and combines them into the final answer.</p>
+  </div>
+  <div class="role-card" style="border-top-color:#1E88E5">
+    <div class="role-icon">🏢</div>
+    <h3>Beekeeper</h3>
+    <p>A company or individual who submits AI tasks (Nectar) and receives results (Honey). Pays per job. Doesn't need to know anything about AI — just submit your question and get an answer.</p>
+  </div>
+</div>
+
+<!-- Roadmap -->
+<div class="card">
+  <div class="card-header">🗺️ Development Roadmap</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem">
+    {% for phase, title, items, done in [
+      ('Phase 1', 'Foundation', ['Website & community', 'User registration', 'Hive browsing', 'Job submission'], True),
+      ('Phase 2', 'Protocol', ['HoneycombOfAI client', 'Worker node software', 'Ollama integration', 'Task queue system'], False),
+      ('Phase 3', 'Network', ['Real task processing', 'Payment system', 'Trust & ratings', 'API for Beekeepers'], False),
+      ('Phase 4', 'Scale', ['Multi-model families', 'Auto-scaling Hives', 'Enterprise features', 'Mobile apps'], False)
+    ] %}
+    <div style="border:1.5px solid {% if done %}var(--green){% else %}var(--cream-d){% endif %};border-radius:8px;padding:0.85rem">
+      <div style="font-weight:700;font-size:0.85rem;margin-bottom:0.2rem;color:{% if done %}var(--green){% else %}var(--brown){% endif %}">
+        {{ phase }} {% if done %}✅{% endif %}
+      </div>
+      <div style="font-weight:600;font-size:0.95rem;margin-bottom:0.5rem">{{ title }}</div>
+      <ul style="list-style:none;padding:0;font-size:0.82rem;color:#6B5344">
+        {% for item in items %}
+          <li style="padding:0.15rem 0">{% if done %}✓{% else %}○{% endif %} {{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- CTA -->
+{% if not current_user.is_authenticated %}
+<div class="card text-center" style="padding:2rem">
+  <h3 class="mb-1">Ready to join the hive?</h3>
+  <p class="text-muted mb-2">Register now and be part of the distributed AI revolution.</p>
+  <a href="{{ url_for('register') }}" class="btn btn-gold btn-lg">Get Started 🐝</a>
+</div>
+{% endif %}
+
 {% endblock %}

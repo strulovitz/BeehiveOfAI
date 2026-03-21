@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Job #{{ job.id }} — Beehive Of AI{% endblock %}
+
+{% block content %}
+
+<div class="flex-between mb-2">
+  <h2>🍯 Job #{{ job.id }}</h2>
+  <a href="{{ url_for('hive_detail', hive_id=hive.id) }}" class="btn btn-outline btn-sm">← Back to Hive</a>
+</div>
+
+<!-- Meta card -->
+<div class="card">
+  <div class="grid-3" style="gap:0.75rem;margin-bottom:1rem">
+    <div>
+      <div class="text-muted" style="font-size:0.8rem">Hive</div>
+      <strong><a href="{{ url_for('hive_detail', hive_id=hive.id) }}">{{ hive.name }}</a></strong>
+    </div>
+    <div>
+      <div class="text-muted" style="font-size:0.8rem">Submitted</div>
+      <strong>{{ job.created_at.strftime('%b %d, %Y %H:%M') }}</strong>
+    </div>
+    <div>
+      <div class="text-muted" style="font-size:0.8rem">Price</div>
+      <strong>${{ "%.2f"|format(job.price) }}</strong>
+    </div>
+  </div>
+
+  <!-- Progress steps -->
+  <div class="progress-steps">
+    {% set steps = [('pending','⏳','Pending'), ('splitting','✂️','Splitting'), ('processing','⚡','Processing'), ('combining','🔗','Combining'), ('completed','✅','Completed')] %}
+    {% for val, icon, label in steps %}
+      {% set idx = loop.index0 %}
+      <div class="step {% if idx < step_index %}done{% elif idx == step_index %}active{% endif %}">
+        <div class="step-dot"></div>
+        <div>{{ icon }} {{ label }}</div>
+        {% if not loop.last %}
+          <div class="step-connector"></div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if job.status == 'failed' %}
+    <div class="alert alert-danger mt-2">❌ This job failed. Please contact support or try resubmitting.</div>
+  {% endif %}
+</div>
+
+<!-- Nectar (task) -->
+<div class="card">
+  <div class="card-header">📝 Nectar (Your Task)</div>
+  <div style="background:var(--cream-d);border-radius:8px;padding:1rem;font-size:0.92rem;line-height:1.6;white-space:pre-wrap">{{ job.nectar }}</div>
+</div>
+
+<!-- Subtasks -->
+{% if job.subtasks %}
+<div class="card">
+  <div class="card-header">⚙️ Sub-Tasks ({{ job.subtasks|length }})</div>
+  {% for st in job.subtasks %}
+    <div style="padding:0.75rem;border:1.5px solid var(--cream-d);border-radius:8px;margin-bottom:0.5rem">
+      <div class="flex-between mb-1">
+        <strong style="font-size:0.88rem">Sub-task #{{ loop.index }}</strong>
+        <span class="badge
+          {% if st.status == 'completed' %}badge-green
+          {% elif st.status == 'failed' %}badge-red
+          {% elif st.status == 'processing' %}badge-blue
+          {% else %}badge-gold{% endif %}">
+          {{ st.status }}
+        </span>
+      </div>
+      <p style="font-size:0.85rem;color:var(--brown);margin-bottom:0.4rem">{{ st.subtask_text }}</p>
+      {% if st.result_text %}
+        <div style="background:var(--cream-d);border-radius:6px;padding:0.6rem;font-size:0.83rem;color:#4A3728">
+          <strong>Result:</strong> {{ st.result_text }}
+        </div>
+      {% endif %}
+      {% if st.worker_id %}
+        <div class="text-muted mt-1" style="font-size:0.78rem">Worker: #{{ st.worker_id }}</div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Honey (result) -->
+{% if job.status == 'completed' and job.honey %}
+<div class="card" style="border:2px solid var(--gold)">
+  <div class="card-header" style="color:var(--gold-d)">🍯 Honey (Result)</div>
+  <div style="background:#FFFBEF;border-radius:8px;padding:1.25rem;font-size:0.95rem;line-height:1.7;white-space:pre-wrap;color:var(--brown)">{{ job.honey }}</div>
+  {% if job.completed_at %}
+    <p class="text-muted mt-2" style="font-size:0.82rem">Completed at {{ job.completed_at.strftime('%b %d, %Y %H:%M') }}</p>
+  {% endif %}
+</div>
+{% elif job.status != 'completed' %}
+<div class="card text-center" style="padding:2rem">
+  <div style="font-size:2.5rem;margin-bottom:0.75rem">⏳</div>
+  <h3 class="mb-1">Processing…</h3>
+  <p class="text-muted">Your task is being worked on. Refresh this page to check progress.</p>
+  <div class="mt-2">
+    <button onclick="location.reload()" class="btn btn-gold">Refresh Status</button>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

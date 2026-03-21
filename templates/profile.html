@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }} — Beehive Of AI{% endblock %}
+
+{% block content %}
+
+<div class="grid-2" style="align-items:start">
+
+  <!-- Left: User info -->
+  <div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1rem">
+        <div style="width:70px;height:70px;background:var(--cream-d);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid var(--gold)">
+          {% if user.role == 'worker' %}🐝{% elif user.role == 'queen' %}👑{% else %}🏢{% endif %}
+        </div>
+        <div>
+          <h2 style="margin-bottom:0.2rem">{{ user.username }}</h2>
+          <span class="badge badge-gold">{{ user.display_role }}</span>
+          {% if user.is_verified %}
+            <span class="badge badge-green" style="margin-left:0.3rem">✅ Verified</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <table style="margin-bottom:0.5rem">
+        <tr>
+          <td><strong>Member since</strong></td>
+          <td>{{ user.created_at.strftime('%B %d, %Y') }}</td>
+        </tr>
+        <tr>
+          <td><strong>Role</strong></td>
+          <td>{{ user.display_role }}</td>
+        </tr>
+        <tr>
+          <td><strong>Jobs completed</strong></td>
+          <td>{{ user.total_jobs }}</td>
+        </tr>
+        {% if is_own_profile %}
+        <tr>
+          <td><strong>Email</strong></td>
+          <td>{{ user.email }}</td>
+        </tr>
+        <tr>
+          <td><strong>Total earnings</strong></td>
+          <td>${{ "%.2f"|format(user.total_earnings) }}</td>
+        </tr>
+        {% if user.phone %}
+        <tr>
+          <td><strong>Phone</strong></td>
+          <td>{{ user.phone }}</td>
+        </tr>
+        {% endif %}
+        {% endif %}
+      </table>
+    </div>
+
+    <!-- Trust score -->
+    <div class="card">
+      <div class="card-header">⭐ Trust Score</div>
+      <div style="text-align:center;margin-bottom:0.75rem">
+        <span style="font-size:3rem;font-weight:700;color:var(--brown)">{{ "%.1f"|format(user.trust_score) }}</span>
+        <span style="font-size:1.2rem;color:#8a7260">/10</span>
+      </div>
+      <div class="trust-bar-wrap">
+        <span class="text-muted">0</span>
+        <div class="trust-bar">
+          <div class="trust-bar-fill" style="width:{{ (user.trust_score / 10 * 100)|int }}%"></div>
+        </div>
+        <span class="text-muted">10</span>
+      </div>
+      {% if avg_rating %}
+        <p class="text-muted mt-1" style="font-size:0.83rem;text-align:center">
+          Average rating from {{ ratings|length }} review{% if ratings|length != 1 %}s{% endif %}:
+          <strong>{{ "%.1f"|format(avg_rating) }}/5 ⭐</strong>
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- Hives -->
+    {% if user.role == 'worker' %}
+      {% set active_memberships = user.memberships | selectattr('status', 'equalto', 'active') | list %}
+      {% if active_memberships %}
+      <div class="card">
+        <div class="card-header">🐝 Member of</div>
+        {% for m in active_memberships %}
+          <div style="padding:0.4rem 0;border-bottom:1px solid var(--cream-d);font-size:0.9rem">
+            <a href="{{ url_for('hive_detail', hive_id=m.hive_id) }}">{{ m.hive.name }}</a>
+            <span class="text-muted"> — since {{ m.joined_at.strftime('%b %Y') }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% elif user.role == 'queen' %}
+      {% if user.managed_hives %}
+      <div class="card">
+        <div class="card-header">👑 Manages</div>
+        {% for h in user.managed_hives %}
+          <div style="padding:0.4rem 0;border-bottom:1px solid var(--cream-d);font-size:0.9rem">
+            <a href="{{ url_for('hive_detail', hive_id=h.id) }}">{{ h.name }}</a>
+            <span class="text-muted"> — {{ h.total_jobs_completed }} jobs</span>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- Right: Ratings -->
+  <div>
+    <div class="card">
+      <div class="card-header">💬 Reviews ({{ ratings|length }})</div>
+
+      {% if ratings %}
+        {% for rating in ratings %}
+          <div style="padding:0.75rem 0;border-bottom:1px solid var(--cream-d)">
+            <div class="flex-between mb-1">
+              <div class="stars">{{ '⭐' * rating.score }}{{ '☆' * (5 - rating.score) }}</div>
+              <span class="text-muted" style="font-size:0.8rem">{{ rating.created_at.strftime('%b %d, %Y') }}</span>
+            </div>
+            {% if rating.comment %}
+              <p style="font-size:0.88rem;color:var(--brown);font-style:italic">"{{ rating.comment }}"</p>
+            {% else %}
+              <p class="text-muted" style="font-size:0.83rem">No comment left.</p>
+            {% endif %}
+            <div class="text-muted mt-1" style="font-size:0.78rem">
+              From: <a href="{{ url_for('profile', user_id=rating.rater_id) }}">{{ rating.rater.username }}</a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-center" style="padding:2rem 0">
+          <div style="font-size:2rem;margin-bottom:0.5rem">💬</div>
+          <p class="text-muted">No reviews yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
