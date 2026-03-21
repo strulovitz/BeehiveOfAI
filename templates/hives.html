@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Browse Hives — Beehive Of AI{% endblock %}
+
+{% block content %}
+<style>
+    .placeholder-page {
+        text-align: center;
+        padding: 4rem 1rem 2rem;
+    }
+
+    .placeholder-page .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .placeholder-page h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #4A3728;
+        margin-bottom: 0.75rem;
+    }
+
+    .placeholder-page .lead {
+        color: #7a5c48;
+        font-size: 1.05rem;
+        max-width: 580px;
+        margin: 0 auto 2rem;
+        line-height: 1.7;
+    }
+
+    .preview-card {
+        background: #fff;
+        border: 1px solid #e8dcc8;
+        border-radius: 14px;
+        padding: 2rem 2.25rem;
+        max-width: 620px;
+        margin: 0 auto;
+        text-align: left;
+        box-shadow: 0 2px 8px rgba(74,55,40,0.07);
+    }
+
+    .preview-card h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #4A3728;
+        margin-bottom: 1rem;
+    }
+
+    .preview-card ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .preview-card ul li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0e8d8;
+        color: #4A3728;
+        font-size: 0.97rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .preview-card ul li:last-child {
+        border-bottom: none;
+    }
+
+    .badge {
+        display: inline-block;
+        background: #F5A623;
+        color: #4A3728;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        margin-top: 1.5rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="placeholder-page">
+    <div class="icon">🐝</div>
+    <h1>Browse Hives</h1>
+    <p class="lead">
+        Coming Soon in Phase 3 — Here you will be able to see all available Hives (teams),
+        their ratings, which AI models they use, their specialization, and their pricing.
+    </p>
+
+    <div class="preview-card">
+        <h2>What you'll see here:</h2>
+        <ul>
+            <li>⭐ Hive ratings and reviews from past Beekeepers</li>
+            <li>🤖 Which AI models the Hive uses (Llama, Mistral, Gemma...)</li>
+            <li>💰 Pricing per 1,000 tokens processed</li>
+            <li>⚡ Average response time and reliability score</li>
+            <li>🔒 Verified privacy and security certifications</li>
+            <li>🗺️ Geographic location of Worker Bees in the Hive</li>
+        </ul>
+    </div>
+
+    <span class="badge">Phase 3</span>
+</div>
+{% endblock %}
