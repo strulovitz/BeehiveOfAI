@@ -5,6 +5,7 @@ app.py — Main Flask Application for BeehiveOfAI
 
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_wtf.csrf import CSRFProtect
 from functools import wraps
 from models import db, User, Hive, HiveMember, Job, SubTask, Rating
 from forms import RegisterForm, LoginForm, CreateHiveForm, SubmitJobForm, RatingForm
@@ -15,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///beehive.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+CSRFProtect(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
