@@ -3,6 +3,8 @@ app.py — Main Flask Application for BeehiveOfAI
 =================================================
 """
 
+import base64
+from datetime import datetime, timezone
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
@@ -16,7 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///beehive.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
-CSRFProtect(app)
+csrf = CSRFProtect(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -43,6 +45,28 @@ def role_required(*roles):
             return f(*args, **kwargs)
         return decorated
     return decorator
+
+
+# ── API auth decorator ─────────────────────────────────────────────────────────
+
+def api_auth_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({"error": "Missing or invalid Authorization header"}), 401
+        token = auth_header.split(' ', 1)[1]
+        try:
+            decoded = base64.b64decode(token).decode('utf-8')
+            email, password = decoded.split(':', 1)
+        except Exception:
+            return jsonify({"error": "Invalid token format"}), 401
+        user = User.query.filter_by(email=email.lower()).first()
+        if not user or not user.check_password(password):
+            return jsonify({"error": "Invalid credentials"}), 401
+        request.api_user = user
+        return f(*args, **kwargs)
+    return decorated
 
 
 # ── Public routes ──────────────────────────────────────────────────────────────
@@ -330,7 +354,132 @@ def profile(user_id):
 
 @app.route('/api/status')
 def api_status():
-    return jsonify({"name": "BeehiveOfAI", "version": "0.3.0", "status": "running"})
+    return jsonify({"name": "BeehiveOfAI", "version": "0.4.0", "status": "running"})
+
+
+@app.route('/api/auth/login', methods=['POST'])
+@csrf.exempt
+def api_login():
+    data = request.get_json() or {}
+    email = data.get('email', '').lower()
+    password = data.get('password', '')
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        return jsonify({"error": "Invalid credentials"}), 401
+    token = base64.b64encode(f"{email}:{password}".encode()).decode()
+    return jsonify({"token": token, "user_id": user.id, "username": user.username, "role": user.role})
+
+
+@app.route('/api/hive/<int:hive_id>/jobs/pending')
+@csrf.exempt
+@api_auth_required
+def api_pending_jobs(hive_id):
+    hive = db.session.get(Hive, hive_id)
+    if not hive:
+        return jsonify({"error": "Hive not found"}), 404
+    if request.api_user.id != hive.queen_id:
+        return jsonify({"error": "Not the queen of this hive"}), 403
+    jobs = Job.query.filter_by(hive_id=hive_id, status='pending').order_by(Job.created_at.asc()).all()
+    return jsonify({"jobs": [
+        {"id": j.id, "nectar": j.nectar, "price": j.price, "created_at": j.created_at.isoformat()}
+        for j in jobs
+    ]})
+
+
+@app.route('/api/job/<int:job_id>/claim', methods=['POST'])
+@csrf.exempt
+@api_auth_required
+def api_claim_job(job_id):
+    job = db.session.get(Job, job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    if request.api_user.id != job.hive.queen_id:
+        return jsonify({"error": "Not the queen of this hive"}), 403
+    if job.status != 'pending':
+        return jsonify({"error": f"Job is already {job.status}"}), 409
+    job.status = 'splitting'
+    db.session.commit()
+    return jsonify({"status": "claimed", "job_id": job.id})
+
+
+@app.route('/api/job/<int:job_id>/status', methods=['PUT'])
+@csrf.exempt
+@api_auth_required
+def api_update_job_status(job_id):
+    job = db.session.get(Job, job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    if request.api_user.id != job.hive.queen_id:
+        return jsonify({"error": "Not the queen of this hive"}), 403
+    data = request.get_json() or {}
+    new_status = data.get('status')
+    valid = ['splitting', 'processing', 'combining', 'failed']
+    if new_status not in valid:
+        return jsonify({"error": f"Invalid status. Must be one of: {valid}"}), 400
+    job.status = new_status
+    db.session.commit()
+    return jsonify({"status": new_status, "job_id": job.id})
+
+
+@app.route('/api/job/<int:job_id>/subtasks', methods=['POST'])
+@csrf.exempt
+@api_auth_required
+def api_create_subtasks(job_id):
+    job = db.session.get(Job, job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    if request.api_user.id != job.hive.queen_id:
+        return jsonify({"error": "Not the queen of this hive"}), 403
+    data = request.get_json() or {}
+    subtask_texts = data.get('subtasks', [])
+    if not subtask_texts:
+        return jsonify({"error": "No subtasks provided"}), 400
+    created = []
+    for text in subtask_texts:
+        st = SubTask(job_id=job.id, subtask_text=text, status='pending')
+        db.session.add(st)
+        db.session.flush()
+        created.append({"id": st.id, "text": text})
+    db.session.commit()
+    return jsonify({"subtasks": created})
+
+
+@app.route('/api/subtask/<int:subtask_id>/result', methods=['PUT'])
+@csrf.exempt
+@api_auth_required
+def api_subtask_result(subtask_id):
+    st = db.session.get(SubTask, subtask_id)
+    if not st:
+        return jsonify({"error": "Subtask not found"}), 404
+    if request.api_user.id != st.job.hive.queen_id:
+        return jsonify({"error": "Not the queen of this hive"}), 403
+    data = request.get_json() or {}
+    st.result_text = data.get('result', '')
+    st.status = 'completed'
+    st.completed_at = datetime.now(timezone.utc)
+    db.session.commit()
+    return jsonify({"status": "completed", "subtask_id": st.id})
+
+
+@app.route('/api/job/<int:job_id>/complete', methods=['POST'])
+@csrf.exempt
+@api_auth_required
+def api_complete_job(job_id):
+    job = db.session.get(Job, job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    if request.api_user.id != job.hive.queen_id:
+        return jsonify({"error": "Not the queen of this hive"}), 403
+    data = request.get_json() or {}
+    honey = data.get('honey', '')
+    if not honey:
+        return jsonify({"error": "No honey provided"}), 400
+    job.honey = honey
+    job.status = 'completed'
+    job.completed_at = datetime.now(timezone.utc)
+    job.hive.total_jobs_completed += 1
+    db.session.commit()
+    return jsonify({"status": "completed", "job_id": job.id})
 
 
 # ── Startup ────────────────────────────────────────────────────────────────────
