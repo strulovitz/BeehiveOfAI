@@ -240,8 +240,76 @@ def seed():
         )
         db.session.add_all([rating1, rating2])
 
+        # ── Second completed job (NOT rated — so you can test rating!) ────
+        job2 = Job(
+            hive_id=hive2.id,
+            beekeeper_id=company1.id,
+            nectar=(
+                'Write a Python function that takes a list of product names and prices, '
+                'and returns the top 3 most expensive products sorted by price descending. '
+                'Include error handling and type hints.'
+            ),
+            honey=(
+                '```python\n'
+                'def top_expensive(products: list[tuple[str, float]], n: int = 3) -> list[tuple[str, float]]:\n'
+                '    """Return the top N most expensive products sorted by price descending.\n\n'
+                '    Args:\n'
+                '        products: List of (name, price) tuples.\n'
+                '        n: Number of top products to return (default 3).\n\n'
+                '    Returns:\n'
+                '        Sorted list of (name, price) tuples, most expensive first.\n\n'
+                '    Raises:\n'
+                '        ValueError: If products list is empty or n < 1.\n'
+                '    """\n'
+                '    if not products:\n'
+                '        raise ValueError("Products list cannot be empty")\n'
+                '    if n < 1:\n'
+                '        raise ValueError("n must be at least 1")\n'
+                '    return sorted(products, key=lambda p: p[1], reverse=True)[:n]\n'
+                '```\n\n'
+                'Usage example:\n'
+                '```python\n'
+                'items = [("Laptop", 999.99), ("Mouse", 29.99), ("Monitor", 449.00), '
+                '("Keyboard", 79.99), ("Headset", 149.99)]\n'
+                'print(top_expensive(items))  \n'
+                '# [("Laptop", 999.99), ("Monitor", 449.00), ("Headset", 149.99)]\n'
+                '```'
+            ),
+            status='completed',
+            price=0.50,
+            created_at=datetime.now(timezone.utc) - timedelta(days=2),
+            completed_at=datetime.now(timezone.utc) - timedelta(days=1, hours=23),
+        )
+        db.session.add(job2)
+        db.session.flush()
+
+        subtasks2 = [
+            SubTask(
+                job_id=job2.id,
+                worker_id=worker1.id,
+                subtask_text='Write the core sorting function with type hints',
+                result_text='Created top_expensive() using sorted() with lambda key on price, returns sliced list.',
+                status='completed',
+                created_at=datetime.now(timezone.utc) - timedelta(days=2),
+                completed_at=datetime.now(timezone.utc) - timedelta(days=1, hours=23, minutes=45),
+            ),
+            SubTask(
+                job_id=job2.id,
+                worker_id=None,
+                subtask_text='Add error handling and docstring',
+                result_text='Added ValueError for empty list and n<1, comprehensive docstring with Args/Returns/Raises.',
+                status='completed',
+                created_at=datetime.now(timezone.utc) - timedelta(days=2),
+                completed_at=datetime.now(timezone.utc) - timedelta(days=1, hours=23, minutes=30),
+            ),
+        ]
+        db.session.add_all(subtasks2)
+        company1.total_jobs = 2
+        hive2.total_jobs_completed = 68
+        print("Created second completed job (unrated — ready for you to test rating!).")
+
         db.session.commit()
-        print("Created sample job with subtasks and ratings.")
+        print("Created sample jobs with subtasks and ratings.")
         print("\nSeed data created successfully!")
         print("\nTest accounts:")
         print("  Worker:     worker1@test.com    / test123")

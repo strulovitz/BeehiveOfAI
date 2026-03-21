@@ -272,9 +272,48 @@ def job_status(job_id):
         step_index = status_steps.index(job.status)
     except ValueError:
         step_index = 0
+    rated_job_ids = set()
+    if is_beekeeper:
+        rated_job_ids = {r.job_id for r in Rating.query.filter_by(rater_id=current_user.id).all()}
     return render_template('job_status.html', job=job, hive=hive,
                            status_steps=status_steps, step_index=step_index,
-                           is_beekeeper=is_beekeeper)
+                           is_beekeeper=is_beekeeper, rated_job_ids=rated_job_ids)
+
+
+@app.route('/job/<int:job_id>/rate', methods=['GET', 'POST'])
+@login_required
+@role_required('beekeeper')
+def rate_job(job_id):
+    job = db.session.get(Job, job_id) or abort(404)
+    if job.beekeeper_id != current_user.id:
+        flash('You can only rate your own jobs.', 'danger')
+        return redirect(url_for('dashboard'))
+    if job.status != 'completed':
+        flash('You can only rate completed jobs.', 'warning')
+        return redirect(url_for('job_status', job_id=job_id))
+    existing = Rating.query.filter_by(rater_id=current_user.id, job_id=job_id).first()
+    if existing:
+        flash('You have already rated this job.', 'info')
+        return redirect(url_for('job_status', job_id=job_id))
+    form = RatingForm()
+    hive = job.hive
+    if form.validate_on_submit():
+        rating = Rating(
+            rater_id=current_user.id,
+            rated_user_id=hive.queen_id,
+            job_id=job_id,
+            score=int(form.score.data),
+            comment=form.comment.data or None,
+        )
+        db.session.add(rating)
+        # Update hive trust score (running average)
+        all_ratings = Rating.query.filter_by(rated_user_id=hive.queen_id).all()
+        new_avg = (sum(r.score for r in all_ratings) + int(form.score.data)) / (len(all_ratings) + 1)
+        hive.trust_score = round(new_avg * 2, 1)  # Scale 1-5 stars to 0-10 trust score
+        db.session.commit()
+        flash('Thank you for rating this Hive!', 'success')
+        return redirect(url_for('job_status', job_id=job_id))
+    return render_template('rate_job.html', job=job, hive=hive, form=form)
 
 
 @app.route('/profile/<int:user_id>')

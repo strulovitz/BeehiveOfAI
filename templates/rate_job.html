@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Rate Job #{{ job.id }} — Beehive Of AI{% endblock %}
+
+{% block content %}
+<div style="max-width:520px;margin:2rem auto">
+  <div class="card">
+    <div class="text-center mb-2">
+      <div style="font-size:2.5rem">⭐</div>
+      <h2 style="margin-bottom:0.25rem">Rate This Hive</h2>
+      <p class="text-muted">How did <strong>{{ hive.name }}</strong> handle Job #{{ job.id }}?</p>
+    </div>
+
+    <div style="background:var(--cream-d);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.5rem;font-size:0.88rem">
+      <strong>Task:</strong> {{ job.nectar[:120] }}{% if job.nectar|length > 120 %}…{% endif %}
+    </div>
+
+    <form method="POST" action="{{ url_for('rate_job', job_id=job.id) }}">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.score.label }}
+        {{ form.score(class="form-control") }}
+        {% for error in form.score.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.comment.label }}
+        {{ form.comment(class="form-control", placeholder="What went well? Anything to improve?", rows=4) }}
+        {% for error in form.comment.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-2">
+        {{ form.submit(class="btn btn-gold btn-lg", style="width:100%") }}
+      </div>
+    </form>
+
+    <div class="text-center mt-2">
+      <a href="{{ url_for('job_status', job_id=job.id) }}">← Back to Job</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
