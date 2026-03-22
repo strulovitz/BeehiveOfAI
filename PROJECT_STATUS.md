@@ -70,9 +70,8 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 
 **Part 7A: Payments**
 - Layer 1: Internal earnings engine (Payment model, automatic split: 5% platform / 30% Queen / 70% Workers)
-- Layer 2: PayPal Commerce Platform integration (chosen because it works from Israel)
-- Design abstraction layer so Stripe Connect can replace PayPal later (when US LLC is created)
-- Nir's preference: PayPal NOW, Stripe LATER (US LLC costs ~$100 which is not available right now)
+- Layer 2: PayPal Commerce Platform integration (works from Israel, zero setup cost)
+- Payment provider decision: PayPal ONLY. No Stripe, no US LLC, no Rapyd.
 
 **Part 7B: Ratings improvements**
 - Allow Queen to rate Workers after job completion
@@ -85,4 +84,4 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
 - GUI development: Native graphical interface for HoneycombOfAI
 - Chapter 8: Next book chapter (building the product layers)
-- US LLC in New Mexico + Stripe Connect (when financially ready)
+- Chapter 8: Next book chapter
