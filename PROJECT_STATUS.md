@@ -5,7 +5,7 @@
 
 ## Last Updated: 2026-03-22 (evening)
 
-## Current Phase: Phase 6 — Next Steps (Phase 5 COMPLETE ✅)
+## Current Phase: Phase 7 — Next Steps (Phase 6 COMPLETE ✅)
 
 ### Network Info
 - **Desktop IP (LAN):** 10.0.0.4
@@ -24,6 +24,9 @@
 - [x] Update config.yaml for LAN setup (Desktop=Queen, Laptop=Worker)
 - [x] **END-TO-END TEST PASSED on 2026-03-22** 🎉
 - [x] Chapter 7 written: "The Technical Blueprint — Inside the Code" ✅
+- [x] Phase 6A: Security hardening — Waitress production server, SECRET_KEY from env var ✅
+- [x] Phase 6B: Cloudflare Tunnel — beehiveofai.com LIVE on the internet! ✅ (2026-03-22 evening)
+- [x] **WEBSITE VERIFIED FROM MOBILE PHONE (not on home Wi-Fi)** 🎉🎉🎉
 
 ### Phase 5 Test Result — SUCCESS
 On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@test.com).
@@ -56,8 +59,14 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 - **Native GUI:** HoneycombOfAI will become a native desktop app (Windows/Linux/macOS installers), CLI stays as dev/automation option
 - **One app, three modes:** HoneycombOfAI is one single application — Worker/Queen/Beekeeper are modes, not separate programs
 
+### Production Setup (Desktop)
+- Website: `python run_production.py` (needs BEEHIVE_SECRET_KEY env var set first)
+- Tunnel: `cloudflared tunnel run beehive` (separate Command Prompt window)
+- Both windows must stay open for the site to be live
+- Tunnel ID: 18a52f43-e0b4-4f5b-9efd-804027df6884
+- Config: C:\Users\nir_s\.cloudflared\config.yml
+
 ### What's Next
-- Phase 6: Domain + internet access (make BeehiveOfAI accessible beyond LAN)
 - Phase 7: Payments, ratings improvements, SMS notifications
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
 - GUI development: Native graphical interface for HoneycombOfAI
