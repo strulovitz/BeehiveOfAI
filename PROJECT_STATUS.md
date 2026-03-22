@@ -3,7 +3,7 @@
 > This file is shared between Desktop and Laptop Claude Code instances via GitHub.
 > Update it whenever significant progress is made.
 
-## Last Updated: 2026-03-22
+## Last Updated: 2026-03-22 (evening)
 
 ## Current Phase: Phase 6 — Next Steps (Phase 5 COMPLETE ✅)
 
@@ -23,6 +23,7 @@
 - [x] Update HoneycombOfAI queen_bee.py for multi-machine orchestration
 - [x] Update config.yaml for LAN setup (Desktop=Queen, Laptop=Worker)
 - [x] **END-TO-END TEST PASSED on 2026-03-22** 🎉
+- [x] Chapter 7 written: "The Technical Blueprint — Inside the Code" ✅
 
 ### Phase 5 Test Result — SUCCESS
 On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@test.com).
@@ -40,13 +41,24 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 - Queen: queen1@test.com / test123
 - Beekeeper: company1@test.com / test123
 
-## What's Next — Phase 6 Ideas
-(To be planned by Desktop Opus 4.6 and Laptop Sonnet 4.6 together)
+### Book Status
+- Chapter 1: The Vision ✅
+- Chapter 2: The Problem ✅
+- Chapter 3: Task Parallelism ✅
+- Chapter 4: How It All Works ✅
+- Chapter 5: The Humans in the Hive ✅
+- Chapter 6: The Road Ahead ✅
+- Chapter 7: The Technical Blueprint ✅
+- Chapter 8: TBD — next chapter
 
-Possible directions:
-- Add more Worker Bees (more machines, or multiple workers on same machine)
-- Build out payment system (track earnings per Worker, per job)
-- Improve the website UI (show which Worker processed which subtask)
-- Write Chapter 7 of the book (The Future — AI for Everyone)
-- Test with heavier/longer tasks to stress-test the distributed pipeline
-- Add real-time job status updates (WebSocket or auto-refresh)
+### Key Architecture Decisions (from Chapter 7)
+- **Multi-backend AI:** Must support Ollama, LM Studio, llama.cpp, and vLLM (not just Ollama)
+- **Native GUI:** HoneycombOfAI will become a native desktop app (Windows/Linux/macOS installers), CLI stays as dev/automation option
+- **One app, three modes:** HoneycombOfAI is one single application — Worker/Queen/Beekeeper are modes, not separate programs
+
+### What's Next
+- Phase 6: Domain + internet access (make BeehiveOfAI accessible beyond LAN)
+- Phase 7: Payments, ratings improvements, SMS notifications
+- Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
+- GUI development: Native graphical interface for HoneycombOfAI
+- Chapter 8: Next book chapter (building the product layers)
