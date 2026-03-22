@@ -66,8 +66,23 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 - Tunnel ID: 18a52f43-e0b4-4f5b-9efd-804027df6884
 - Config: C:\Users\nir_s\.cloudflared\config.yml
 
-### What's Next
-- Phase 7: Payments, ratings improvements, SMS notifications
+### What's Next — Phase 7 (starting next session, 2026-03-23)
+
+**Part 7A: Payments**
+- Layer 1: Internal earnings engine (Payment model, automatic split: 5% platform / 30% Queen / 70% Workers)
+- Layer 2: PayPal Commerce Platform integration (chosen because it works from Israel)
+- Design abstraction layer so Stripe Connect can replace PayPal later (when US LLC is created)
+- Nir's preference: PayPal NOW, Stripe LATER (US LLC costs ~$100 which is not available right now)
+
+**Part 7B: Ratings improvements**
+- Allow Queen to rate Workers after job completion
+- Update Worker trust scores based on Queen ratings
+
+**Part 7C: SMS notifications**
+- Twilio integration for job submitted / completed notifications
+
+**Future (not Phase 7):**
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
 - GUI development: Native graphical interface for HoneycombOfAI
 - Chapter 8: Next book chapter (building the product layers)
+- US LLC in New Mexico + Stripe Connect (when financially ready)
