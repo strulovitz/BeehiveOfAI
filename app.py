@@ -354,7 +354,7 @@ def profile(user_id):
 
 @app.route('/api/status')
 def api_status():
-    return jsonify({"name": "BeehiveOfAI", "version": "0.4.0", "status": "running"})
+    return jsonify({"name": "BeehiveOfAI", "version": "0.5.0", "status": "running"})
 
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -451,14 +451,95 @@ def api_subtask_result(subtask_id):
     st = db.session.get(SubTask, subtask_id)
     if not st:
         return jsonify({"error": "Subtask not found"}), 404
-    if request.api_user.id != st.job.hive.queen_id:
-        return jsonify({"error": "Not the queen of this hive"}), 403
+    is_queen = request.api_user.id == st.job.hive.queen_id
+    is_assigned_worker = request.api_user.id == st.worker_id
+    if not is_queen and not is_assigned_worker:
+        return jsonify({"error": "Not authorized to submit result for this subtask"}), 403
     data = request.get_json() or {}
     st.result_text = data.get('result', '')
     st.status = 'completed'
     st.completed_at = datetime.now(timezone.utc)
     db.session.commit()
     return jsonify({"status": "completed", "subtask_id": st.id})
+
+
+@app.route('/api/job/<int:job_id>/subtasks')
+@csrf.exempt
+@api_auth_required
+def api_job_subtasks(job_id):
+    """Get all subtasks for a job with their current status and results."""
+    job = db.session.get(Job, job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    is_queen = request.api_user.id == job.hive.queen_id
+    is_member = HiveMember.query.filter_by(
+        hive_id=job.hive_id, user_id=request.api_user.id, status='active'
+    ).first()
+    if not is_queen and not is_member:
+        return jsonify({"error": "Not authorized to view this job's subtasks"}), 403
+    return jsonify({"subtasks": [
+        {
+            "id": st.id,
+            "subtask_text": st.subtask_text,
+            "result_text": st.result_text,
+            "status": st.status,
+            "worker_id": st.worker_id,
+        }
+        for st in job.subtasks
+    ]})
+
+
+@app.route('/api/hive/<int:hive_id>/subtasks/available')
+@csrf.exempt
+@api_auth_required
+def api_available_subtasks(hive_id):
+    """Worker polls this endpoint to find pending subtasks to process."""
+    hive = db.session.get(Hive, hive_id)
+    if not hive:
+        return jsonify({"error": "Hive not found"}), 404
+    membership = HiveMember.query.filter_by(
+        hive_id=hive_id, user_id=request.api_user.id, status='active'
+    ).first()
+    if not membership:
+        return jsonify({"error": "You are not a member of this hive"}), 403
+    subtasks = (SubTask.query
+                .join(Job)
+                .filter(Job.hive_id == hive_id, SubTask.status == 'pending')
+                .order_by(SubTask.created_at.asc())
+                .all())
+    return jsonify({"subtasks": [
+        {"id": st.id, "job_id": st.job_id, "subtask_text": st.subtask_text, "status": st.status}
+        for st in subtasks
+    ]})
+
+
+@app.route('/api/subtask/<int:subtask_id>/claim', methods=['PUT'])
+@csrf.exempt
+@api_auth_required
+def api_claim_subtask(subtask_id):
+    """Worker claims a specific subtask to process."""
+    st = db.session.get(SubTask, subtask_id)
+    if not st:
+        return jsonify({"error": "Subtask not found"}), 404
+    membership = HiveMember.query.filter_by(
+        hive_id=st.job.hive_id, user_id=request.api_user.id, status='active'
+    ).first()
+    if not membership:
+        return jsonify({"error": "You are not a member of this hive"}), 403
+    if st.status != 'pending':
+        return jsonify({"error": f"Subtask already {st.status}"}), 409
+    st.status = 'assigned'
+    st.worker_id = request.api_user.id
+    db.session.commit()
+    return jsonify({"status": "claimed", "subtask_id": st.id, "subtask_text": st.subtask_text})
+
+
+@app.route('/api/worker/heartbeat', methods=['POST'])
+@csrf.exempt
+@api_auth_required
+def api_worker_heartbeat():
+    """Worker sends a heartbeat to show it is online."""
+    return jsonify({"status": "ok", "server_time": datetime.now(timezone.utc).isoformat()})
 
 
 @app.route('/api/job/<int:job_id>/complete', methods=['POST'])
@@ -488,4 +569,4 @@ with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
