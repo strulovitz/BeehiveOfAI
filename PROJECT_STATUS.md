@@ -3,7 +3,7 @@
 > This file is shared between Desktop and Laptop Claude Code instances via GitHub.
 > Update it whenever significant progress is made.
 
-## Last Updated: 2026-03-23 (evening)
+## Last Updated: 2026-03-23 (late evening)
 
 ## Current Phase: Phase 7 — Next Steps (Phase 6 COMPLETE ✅)
 
@@ -27,6 +27,14 @@
 - [x] Phase 6A: Security hardening — Waitress production server, SECRET_KEY from env var ✅
 - [x] Phase 6B: Cloudflare Tunnel — beehiveofai.com LIVE on the internet! ✅ (2026-03-22 evening)
 - [x] **WEBSITE VERIFIED FROM MOBILE PHONE (not on home Wi-Fi)** 🎉🎉🎉
+- [x] Phase 7A Layer 1: Nectar Credits engine, Honeycomb Balance, revenue split ✅ (2026-03-23)
+- [x] Phase 7A Layer 2: PayPal checkout tested & working in sandbox ✅ (2026-03-23)
+- [x] Phase 7B: Ratings — Queen↔Worker mutual ratings, trust score updates ✅ (2026-03-23)
+- [x] **THE PIVOT:** Project reframed as open-source for OTHERS to deploy (2026-03-23)
+- [x] README.md completely rewritten with "Turn Many Weak AIs Into One Powerful AI" pitch ✅
+- [x] DEPLOY.md — full deployment guide (home/VPS/PaaS) ✅
+- [x] PAYMENT_GUIDE.md — payment provider by country + vibe coding approach ✅
+- [x] Chapter 8: "The Business Engine — Money, Honey, and the Invisible Walls" ✅
 
 ### Phase 5 Test Result — SUCCESS
 On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@test.com).
@@ -144,17 +152,24 @@ Payment chapter becomes a guide: "if YOU are in the US, use Stripe Connect. If Y
 
 ### What's Next
 
-**Part 7B: Ratings improvements**
-- Allow Queen to rate Workers after job completion
-- Update Worker trust scores based on Queen ratings
+**Part 7B: Ratings improvements ✅ DONE (2026-03-23)**
+- Queen can rate individual Workers per subtask after job completion ✅
+- Workers can rate their Queen's coordination after job completion ✅
+- Trust scores auto-update based on running average of all ratings ✅
+- Worker Contributions panel on job status page (Queen view) ✅
+- Role badges on profile reviews (Beekeeper/Queen/Worker Review) ✅
+- New routes: `/subtask/<id>/rate-worker`, `/job/<id>/rate-queen`
+- New templates: `rate_worker.html`, `rate_queen.html`
 
-**Part 7C: SMS notifications**
-- Twilio integration for job submitted / completed notifications
+**Part 7C: SMS notifications — NEXT**
+- Twilio integration for job submitted / completed / worker joined / harvest notifications
+- Two-mode: real Twilio if env vars set, console log if not
+- Plan ready in `PHASE7C_SMS_PLAN.md`
 
-**Deployer Documentation:**
-- Payment setup guide for deployers (Stripe/PayPal/etc. by country)
-- Deployment guide (how to run BeehiveOfAI for your organization)
-- README rewrite with "YOU" framing
+**Deployer Documentation ✅ DONE (2026-03-23)**
+- `DEPLOY.md` — Three hosting options (free/cheap/PaaS), step-by-step ✅
+- `PAYMENT_GUIDE.md` — Provider by country, vibe coding approach ✅
+- `README.md` — Complete rewrite with "YOU" framing ✅
 
 **Future:**
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI

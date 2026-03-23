@@ -77,11 +77,30 @@ We DON'T claim plug-and-play payments for every country. Instead:
 
 ---
 
+## PHASE 7B: RATINGS — DONE ✅ (implemented later in the evening)
+
+### What Was Built
+- **Queen rates Workers** — per-subtask rating after job completion
+- **Worker rates Queen** — per-job rating after completion
+- **Trust scores auto-update** — running average of all ratings, scaled 1-5 stars → 0-10 trust score
+- **Worker Contributions panel** — Queen sees all Workers who completed subtasks on job status page
+- **Role badges** — profile reviews show "Beekeeper Review" / "Queen Review" / "Worker Review"
+
+### New/Changed Files (7B)
+- `models.py` — added `subtask_id` to Rating, added `worker` relationship to SubTask
+- `app.py` — new `rate_worker()` and `rate_queen()` routes, updated `job_status()` with new template vars
+- `templates/rate_worker.html` — NEW (Queen rates Worker form)
+- `templates/rate_queen.html` — NEW (Worker rates Queen form)
+- `templates/job_status.html` — Worker Contributions panel + Rate Your Queen card
+- `templates/profile.html` — role badges on reviews
+- `seed_data.py` — sample Queen→Worker and Worker→Queen ratings
+
+### DB Migration Required
+Deleted and reseeded DB after 7B (new `subtask_id` column on ratings table).
+
 ## WHAT'S NEXT (Priority Order)
 
-1. Continue building features that make the platform more impressive for deployers
-2. Phase 7B: Ratings (Queen rates Workers)
-3. Phase 7C: SMS notifications (Twilio)
+1. Phase 7C: SMS notifications (Twilio) — plan ready in `PHASE7C_SMS_PLAN.md`
 4. Deployment guide (DEPLOY.md) — how deployers set up their own instance
 5. Payment guide (PAYMENT_GUIDE.md) — by country, with Claude Code prompts
 6. Multi-backend support (LM Studio, llama.cpp, vLLM)
