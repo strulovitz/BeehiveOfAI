@@ -108,8 +108,8 @@ Everything works out of the box — submitting tasks, splitting work, combining 
 When you're ready to deploy for real:
 
 1. **Get a domain** — Any domain works (yourhive.com, aibees.io, whatever you want)
-2. **Set up hosting** — A VPS, a cloud server, or even your own computer + Cloudflare Tunnel
-3. **Connect payments** — See the next section
+2. **Set up hosting** — A VPS, a cloud server, or even your own computer + Cloudflare Tunnel → **[Full deployment guide](DEPLOY.md)**
+3. **Connect payments** — See the next section, or the **[detailed payment guide](PAYMENT_GUIDE.md)**
 
 The platform is designed to run independently on any domain. You're deploying YOUR business, not ours.
 
