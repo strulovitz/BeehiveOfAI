@@ -24,6 +24,8 @@ class User(UserMixin, db.Model):
     trust_score = db.Column(db.Float, default=5.0)  # 0.0 to 10.0
     total_jobs = db.Column(db.Integer, default=0)
     total_earnings = db.Column(db.Float, default=0.0)
+    nectar_balance = db.Column(db.Integer, default=0)        # Beekeeper's question credits
+    honeycomb_balance = db.Column(db.Float, default=0.0)     # Queen/Worker's available earnings (pending harvest)
     is_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -133,3 +135,35 @@ class Rating(db.Model):
     score = db.Column(db.Integer, nullable=False)  # 1 to 5 stars
     comment = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class NectarTransaction(db.Model):
+    """Log of Nectar credit movements — purchases, spending, refunds."""
+    __tablename__ = 'nectar_transactions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Integer, nullable=False)           # positive = credit, negative = debit
+    balance_after = db.Column(db.Integer, nullable=False)    # balance after this transaction
+    transaction_type = db.Column(db.String(20), nullable=False)  # 'purchase', 'spend', 'refund', 'bonus'
+    description = db.Column(db.String(200), nullable=False)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', backref='nectar_transactions')
+
+
+class EarningsTransaction(db.Model):
+    """Log of earnings for Queens and Workers — earned from jobs, or harvested (paid out)."""
+    __tablename__ = 'earnings_transactions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)             # positive = earned, negative = harvested
+    balance_after = db.Column(db.Float, nullable=False)      # honeycomb balance after this transaction
+    transaction_type = db.Column(db.String(20), nullable=False)  # 'earned', 'harvested'
+    description = db.Column(db.String(200), nullable=False)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', backref='earnings_transactions')

@@ -5,7 +5,7 @@ Run: python seed_data.py
 """
 
 from app import app
-from models import db, User, Hive, HiveMember, Job, SubTask, Rating
+from models import db, User, Hive, HiveMember, Job, SubTask, Rating, NectarTransaction, EarningsTransaction
 from datetime import datetime, timezone, timedelta
 
 
@@ -14,6 +14,8 @@ def seed():
         db.create_all()
 
         # ── Clear existing data ──────────────────────────────────────────────
+        EarningsTransaction.query.delete()
+        NectarTransaction.query.delete()
         Rating.query.delete()
         SubTask.query.delete()
         Job.query.delete()
@@ -31,6 +33,7 @@ def seed():
             trust_score=7.5,
             total_jobs=12,
             total_earnings=18.60,
+            honeycomb_balance=18.60,
             is_verified=True,
         )
         worker1.set_password('test123')
@@ -42,6 +45,7 @@ def seed():
             trust_score=8.9,
             total_jobs=45,
             total_earnings=112.50,
+            honeycomb_balance=35.00,
             is_verified=True,
         )
         queen1.set_password('test123')
@@ -53,6 +57,7 @@ def seed():
             trust_score=6.0,
             total_jobs=8,
             total_earnings=0.0,
+            nectar_balance=50,
             is_verified=False,
         )
         company1.set_password('test123')
@@ -307,6 +312,80 @@ def seed():
         company1.total_jobs = 2
         hive2.total_jobs_completed = 68
         print("Created second completed job (unrated — ready for you to test rating!).")
+
+        # ── Nectar Transactions for company1 (Beekeeper) ─────────────────────
+        nectar_purchase = NectarTransaction(
+            user_id=company1.id,
+            amount=50,
+            balance_after=50,
+            transaction_type='purchase',
+            description='Purchased Honey Jar (50 Nectars) — TEST MODE',
+            created_at=datetime.now(timezone.utc) - timedelta(days=6),
+        )
+        nectar_spend1 = NectarTransaction(
+            user_id=company1.id,
+            amount=-1,
+            balance_after=49,
+            transaction_type='spend',
+            description=f'Submitted job to {hive1.name}',
+            job_id=job1.id,
+            created_at=datetime.now(timezone.utc) - timedelta(days=5),
+        )
+        nectar_spend2 = NectarTransaction(
+            user_id=company1.id,
+            amount=-1,
+            balance_after=48,
+            transaction_type='spend',
+            description=f'Submitted job to {hive2.name}',
+            job_id=job2.id,
+            created_at=datetime.now(timezone.utc) - timedelta(days=2),
+        )
+        db.session.add_all([nectar_purchase, nectar_spend1, nectar_spend2])
+        # Fix company1's actual balance (50 purchased - 2 spent = 48, but we seeded 50 for demo friendliness)
+
+        # ── Earnings Transactions for queen1 ──────────────────────────────────
+        # Queen share: 30% of 95% of $0.75 = ~$0.2138 per job
+        queen_earn1 = EarningsTransaction(
+            user_id=queen1.id,
+            amount=0.2138,
+            balance_after=0.2138,
+            transaction_type='earned',
+            description=f'Queen share for job #{job1.id} in {hive1.name}',
+            job_id=job1.id,
+            created_at=datetime.now(timezone.utc) - timedelta(days=4, hours=22),
+        )
+        queen_earn2 = EarningsTransaction(
+            user_id=queen1.id,
+            amount=0.2138,
+            balance_after=0.4275,
+            transaction_type='earned',
+            description=f'Queen share for job #{job2.id} in {hive2.name}',
+            job_id=job2.id,
+            created_at=datetime.now(timezone.utc) - timedelta(days=1, hours=23),
+        )
+        db.session.add_all([queen_earn1, queen_earn2])
+
+        # ── Earnings Transactions for worker1 ─────────────────────────────────
+        # Worker share: 70% of 95% of $0.75 = ~$0.4988 per job (1 worker on each job)
+        worker_earn1 = EarningsTransaction(
+            user_id=worker1.id,
+            amount=0.4988,
+            balance_after=0.4988,
+            transaction_type='earned',
+            description=f'Worker share for job #{job1.id} in {hive1.name}',
+            job_id=job1.id,
+            created_at=datetime.now(timezone.utc) - timedelta(days=4, hours=22),
+        )
+        worker_earn2 = EarningsTransaction(
+            user_id=worker1.id,
+            amount=0.4988,
+            balance_after=0.9975,
+            transaction_type='earned',
+            description=f'Worker share for job #{job2.id} in {hive2.name}',
+            job_id=job2.id,
+            created_at=datetime.now(timezone.utc) - timedelta(days=1, hours=23),
+        )
+        db.session.add_all([worker_earn1, worker_earn2])
 
         db.session.commit()
         print("Created sample jobs with subtasks and ratings.")

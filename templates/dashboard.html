@@ -18,10 +18,17 @@
     <div class="stat-val">{{ current_user.total_jobs }}</div>
     <div class="stat-lbl">Total Jobs</div>
   </div>
+  {% if current_user.role == 'beekeeper' %}
   <div class="stat-box">
-    <div class="stat-val">${{ "%.2f"|format(current_user.total_earnings) }}</div>
-    <div class="stat-lbl">Total Earnings</div>
+    <div class="stat-val">🍯 {{ current_user.nectar_balance }}</div>
+    <div class="stat-lbl">Nectar Balance</div>
   </div>
+  {% else %}
+  <div class="stat-box">
+    <div class="stat-val">${{ "%.2f"|format(current_user.honeycomb_balance) }}</div>
+    <div class="stat-lbl">Honeycomb Balance</div>
+  </div>
+  {% endif %}
 </div>
 
 <!-- Trust score bar -->
@@ -39,6 +46,10 @@
 
 <!-- ── WORKER BEE ── -->
 {% if current_user.role == 'worker' %}
+
+<div class="mb-2" style="text-align:right">
+  <a href="{{ url_for('my_balance') }}" class="btn btn-outline btn-sm">💰 View Honeycomb Balance →</a>
+</div>
 
 <div class="card">
   <div class="flex-between card-header">
@@ -82,6 +93,10 @@
 
 <!-- ── QUEEN BEE ── -->
 {% elif current_user.role == 'queen' %}
+
+<div class="mb-2" style="text-align:right">
+  <a href="{{ url_for('my_balance') }}" class="btn btn-outline btn-sm">💰 View Honeycomb Balance →</a>
+</div>
 
 <div class="card">
   <div class="flex-between card-header">
@@ -130,15 +145,23 @@
 <!-- ── BEEKEEPER ── -->
 {% elif current_user.role == 'beekeeper' %}
 
-<div class="grid-2 mb-2">
+<div class="grid-3 mb-2">
   <div class="stat-box">
     <div class="stat-val">{{ data.jobs|length if data.jobs else 0 }}</div>
     <div class="stat-lbl">Recent Jobs</div>
+  </div>
+  <div class="stat-box" style="cursor:pointer" onclick="window.location='{{ url_for('buy_nectars') }}'">
+    <div class="stat-val">🍯 {{ current_user.nectar_balance }}</div>
+    <div class="stat-lbl">Nectar Balance</div>
   </div>
   <div class="stat-box">
     <div class="stat-val">${{ "%.2f"|format(data.total_spent or 0) }}</div>
     <div class="stat-lbl">Total Spent</div>
   </div>
+</div>
+<div class="mb-2" style="text-align:right">
+  <a href="{{ url_for('buy_nectars') }}" class="btn btn-gold btn-sm">🍯 Buy More Nectars</a>
+  <a href="{{ url_for('my_balance') }}" class="btn btn-outline btn-sm" style="margin-left:0.5rem">View Balance History</a>
 </div>
 
 <div class="card">

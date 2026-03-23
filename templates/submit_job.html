@@ -30,6 +30,21 @@
     </div>
   </div>
 
+  <!-- Nectar balance notice -->
+  {% if current_user.nectar_balance == 0 %}
+  <div class="alert alert-warning" style="margin-bottom:1rem">
+    ⚠️ <strong>You have no Nectars!</strong>
+    You need at least 1 Nectar to submit a job.
+    <a href="{{ url_for('buy_nectars') }}" style="font-weight:600">Buy a Nectar package →</a>
+  </div>
+  {% else %}
+  <div class="alert alert-info" style="margin-bottom:1rem">
+    ℹ️ Your Nectar Balance: <strong>🍯 {{ current_user.nectar_balance }}</strong>
+    &nbsp;·&nbsp; This job will cost <strong>1 Nectar</strong>.
+    Balance after: <strong>🍯 {{ current_user.nectar_balance - 1 }}</strong>
+  </div>
+  {% endif %}
+
   <div class="card">
     <div class="card-header">Describe Your Task (Nectar)</div>
     <p class="text-muted mb-2" style="font-size:0.88rem">
@@ -55,7 +70,8 @@
         </ul>
       </div>
 
-      {{ form.submit(class="btn btn-gold btn-lg", style="width:100%") }}
+      {{ form.submit(class="btn btn-gold btn-lg", style="width:100%",
+                     disabled=(current_user.nectar_balance == 0)) }}
     </form>
   </div>
 </div>

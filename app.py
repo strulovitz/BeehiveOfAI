@@ -10,8 +10,26 @@ from flask import Flask, render_template, redirect, url_for, flash, request, jso
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
 from functools import wraps
-from models import db, User, Hive, HiveMember, Job, SubTask, Rating
+from models import db, User, Hive, HiveMember, Job, SubTask, Rating, NectarTransaction, EarningsTransaction
 from forms import RegisterForm, LoginForm, CreateHiveForm, SubmitJobForm, RatingForm
+
+# ── Nectar Credit Packages ────────────────────────────────────────────────────
+NECTAR_PACKAGES = {
+    'honey_drop': {'name': 'Honey Drop', 'nectars': 20,  'price': 18.00, 'discount': '10%', 'emoji': '💧'},
+    'honey_jar':  {'name': 'Honey Jar',  'nectars': 50,  'price': 40.00, 'discount': '20%', 'emoji': '🍯'},
+    'honey_pot':  {'name': 'Honey Pot',  'nectars': 100, 'price': 75.00, 'discount': '25%', 'emoji': '🏺'},
+}
+
+# Revenue split percentages
+PLATFORM_FEE_PERCENT = 5    # 5% to the Hub (BeehiveOfAI platform)
+QUEEN_SHARE_PERCENT = 30    # 30% of remainder to Queen Bee
+WORKER_SHARE_PERCENT = 70   # 70% of remainder to Worker Bees
+
+# Base dollar value per Nectar (for revenue split calculations — based on Honey Pot rate)
+NECTAR_BASE_VALUE = 0.75  # dollars
+
+# Harvest (payout) threshold
+HARVEST_THRESHOLD = 50.00  # minimum Honeycomb Balance to request a payout
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('BEEHIVE_SECRET_KEY', 'dev-only-secret-key-not-for-production')
@@ -30,6 +48,17 @@ login_manager.login_message_category = 'warning'
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+
+@app.context_processor
+def inject_balances():
+    """Make balance info available in all templates."""
+    if current_user.is_authenticated:
+        return {
+            'user_nectar_balance': current_user.nectar_balance,
+            'user_honeycomb_balance': current_user.honeycomb_balance,
+        }
+    return {}
 
 
 # ── Role decorators ────────────────────────────────────────────────────────────
@@ -265,6 +294,10 @@ def submit_job(hive_id):
     hive = db.session.get(Hive, hive_id) or abort(404)
     form = SubmitJobForm()
     if form.validate_on_submit():
+        # Check Nectar balance
+        if current_user.nectar_balance < 1:
+            flash('You need at least 1 Nectar to submit a job. Please buy a Nectar package first!', 'warning')
+            return redirect(url_for('buy_nectars'))
         job = Job(
             hive_id=hive_id,
             beekeeper_id=current_user.id,
@@ -273,9 +306,21 @@ def submit_job(hive_id):
             status='pending',
         )
         db.session.add(job)
+        # Deduct 1 Nectar
+        current_user.nectar_balance -= 1
+        nectar_tx = NectarTransaction(
+            user_id=current_user.id,
+            amount=-1,
+            balance_after=current_user.nectar_balance,
+            transaction_type='spend',
+            description=f'Submitted job to {hive.name}',
+        )
+        db.session.add(nectar_tx)
         current_user.total_jobs += 1
+        db.session.flush()  # get job.id
+        nectar_tx.job_id = job.id
         db.session.commit()
-        flash('Your task has been submitted! The Hive will process it shortly.', 'success')
+        flash('Your task has been submitted! 1 Nectar spent.', 'success')
         return redirect(url_for('job_status', job_id=job.id))
     return render_template('submit_job.html', hive=hive, form=form)
 
@@ -339,6 +384,72 @@ def rate_job(job_id):
         flash('Thank you for rating this Hive!', 'success')
         return redirect(url_for('job_status', job_id=job_id))
     return render_template('rate_job.html', job=job, hive=hive, form=form)
+
+
+@app.route('/buy-nectars', methods=['GET', 'POST'])
+@login_required
+@role_required('beekeeper')
+def buy_nectars():
+    if request.method == 'POST':
+        package_id = request.form.get('package_id')
+        package = NECTAR_PACKAGES.get(package_id)
+        if not package:
+            flash('Invalid package selected.', 'danger')
+            return redirect(url_for('buy_nectars'))
+        current_user.nectar_balance += package['nectars']
+        db.session.add(NectarTransaction(
+            user_id=current_user.id,
+            amount=package['nectars'],
+            balance_after=current_user.nectar_balance,
+            transaction_type='purchase',
+            description=f"Purchased {package['name']} ({package['nectars']} Nectars) — TEST MODE",
+        ))
+        db.session.commit()
+        flash(f"TEST MODE: No real payment charged. You received {package['nectars']} Nectars ({package['name']})!", 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('buy_nectars.html', packages=NECTAR_PACKAGES)
+
+
+@app.route('/my-balance')
+@login_required
+def my_balance():
+    if current_user.role == 'beekeeper':
+        transactions = (NectarTransaction.query
+                        .filter_by(user_id=current_user.id)
+                        .order_by(NectarTransaction.created_at.desc())
+                        .limit(20).all())
+        return render_template('my_balance.html', transactions=transactions,
+                               harvest_threshold=HARVEST_THRESHOLD)
+    else:
+        transactions = (EarningsTransaction.query
+                        .filter_by(user_id=current_user.id)
+                        .order_by(EarningsTransaction.created_at.desc())
+                        .limit(20).all())
+        return render_template('my_balance.html', transactions=transactions,
+                               harvest_threshold=HARVEST_THRESHOLD)
+
+
+@app.route('/harvest', methods=['POST'])
+@login_required
+@role_required('queen', 'worker')
+def harvest():
+    if current_user.honeycomb_balance < HARVEST_THRESHOLD:
+        flash(f'You need at least ${HARVEST_THRESHOLD:.2f} in your Honeycomb Balance to harvest. '
+              f'Current balance: ${current_user.honeycomb_balance:.2f}', 'warning')
+        return redirect(url_for('my_balance'))
+    amount = current_user.honeycomb_balance
+    db.session.add(EarningsTransaction(
+        user_id=current_user.id,
+        amount=-amount,
+        balance_after=0.0,
+        transaction_type='harvested',
+        description=f'Honey Harvest of ${amount:.2f} — TEST MODE (PayPal payout coming soon)',
+    ))
+    current_user.honeycomb_balance = 0.0
+    db.session.commit()
+    flash(f'🍯 Honey Harvest requested! ${amount:.2f} will be sent to your PayPal. '
+          f'(TEST MODE: No real payout yet — PayPal integration coming soon)', 'success')
+    return redirect(url_for('my_balance'))
 
 
 @app.route('/profile/<int:user_id>')
@@ -560,8 +671,56 @@ def api_complete_job(job_id):
     job.status = 'completed'
     job.completed_at = datetime.now(timezone.utc)
     job.hive.total_jobs_completed += 1
+
+    # ── Revenue split ──────────────────────────────────────────────────────────
+    total_value = NECTAR_BASE_VALUE  # $0.75 per Nectar
+    platform_cut = total_value * (PLATFORM_FEE_PERCENT / 100)
+    remainder = total_value - platform_cut
+    queen_cut = remainder * (QUEEN_SHARE_PERCENT / 100)
+    worker_pool = remainder * (WORKER_SHARE_PERCENT / 100)
+
+    # Credit Queen Bee
+    queen = job.hive.queen
+    queen.honeycomb_balance += queen_cut
+    queen.total_earnings += queen_cut
+    db.session.add(EarningsTransaction(
+        user_id=queen.id,
+        amount=queen_cut,
+        balance_after=queen.honeycomb_balance,
+        transaction_type='earned',
+        description=f'Queen share for job #{job.id} in {job.hive.name}',
+        job_id=job.id,
+    ))
+
+    # Credit Worker Bees (split equally among workers who completed subtasks)
+    completed_subtasks = [st for st in job.subtasks if st.status == 'completed' and st.worker_id]
+    worker_ids = list(set(st.worker_id for st in completed_subtasks))
+    if worker_ids:
+        per_worker = worker_pool / len(worker_ids)
+        for worker_id in worker_ids:
+            worker = db.session.get(User, worker_id)
+            worker.honeycomb_balance += per_worker
+            worker.total_earnings += per_worker
+            db.session.add(EarningsTransaction(
+                user_id=worker_id,
+                amount=per_worker,
+                balance_after=worker.honeycomb_balance,
+                transaction_type='earned',
+                description=f'Worker share for job #{job.id} in {job.hive.name}',
+                job_id=job.id,
+            ))
+
     db.session.commit()
-    return jsonify({"status": "completed", "job_id": job.id})
+    return jsonify({
+        "status": "completed",
+        "job_id": job.id,
+        "revenue_split": {
+            "platform": round(platform_cut, 4),
+            "queen": round(queen_cut, 4),
+            "worker_pool": round(worker_pool, 4),
+            "workers_count": len(worker_ids),
+        }
+    })
 
 
 # ── Startup ────────────────────────────────────────────────────────────────────

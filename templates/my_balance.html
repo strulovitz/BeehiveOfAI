@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}My Balance — Beehive Of AI{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;margin:0 auto">
+
+  <div class="flex-between mb-2">
+    <h2>💰 My Balance</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+  </div>
+
+  <!-- ── BEEKEEPER VIEW ── -->
+  {% if current_user.role == 'beekeeper' %}
+
+  <div class="card" style="text-align:center;padding:2rem;margin-bottom:1.25rem">
+    <div class="text-muted" style="font-size:0.9rem;margin-bottom:0.5rem">Nectar Balance</div>
+    <div style="font-size:4rem;font-weight:700;color:var(--gold-d);line-height:1">
+      🍯 {{ current_user.nectar_balance }}
+    </div>
+    <div class="text-muted" style="margin:0.5rem 0 1.5rem">question credits available</div>
+    <a href="{{ url_for('buy_nectars') }}" class="btn btn-gold">+ Buy More Nectars</a>
+  </div>
+
+  <!-- Transaction history -->
+  <div class="card">
+    <div class="card-header">Nectar Transaction History</div>
+    {% if transactions %}
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Balance After</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr>
+          <td class="text-muted" style="font-size:0.83rem;white-space:nowrap">
+            {{ tx.created_at.strftime('%b %d, %Y') }}
+          </td>
+          <td>
+            {% if tx.transaction_type == 'purchase' %}
+              <span class="badge badge-green">Purchase</span>
+            {% elif tx.transaction_type == 'spend' %}
+              <span class="badge badge-gold">Spent</span>
+            {% elif tx.transaction_type == 'refund' %}
+              <span class="badge badge-blue">Refund</span>
+            {% else %}
+              <span class="badge">{{ tx.transaction_type|title }}</span>
+            {% endif %}
+          </td>
+          <td style="font-weight:600;color:{% if tx.amount > 0 %}var(--green){% else %}var(--red){% endif %}">
+            {% if tx.amount > 0 %}+{% endif %}{{ tx.amount }} 🍯
+          </td>
+          <td>{{ tx.balance_after }} 🍯</td>
+          <td class="text-muted" style="font-size:0.85rem">{{ tx.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center" style="padding:2rem">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem">🍯</div>
+      <p class="text-muted">No transactions yet. Buy your first Nectar package to get started!</p>
+      <a href="{{ url_for('buy_nectars') }}" class="btn btn-gold mt-1">Buy Nectars</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── QUEEN / WORKER VIEW ── -->
+  {% else %}
+
+  <div class="grid-2 mb-2" style="gap:1rem">
+    <div class="card" style="text-align:center;padding:1.5rem">
+      <div class="text-muted" style="font-size:0.9rem;margin-bottom:0.4rem">Honeycomb Balance</div>
+      <div style="font-size:3rem;font-weight:700;color:var(--gold-d);line-height:1">
+        ${{ "%.2f"|format(current_user.honeycomb_balance) }}
+      </div>
+      <div class="text-muted" style="font-size:0.82rem;margin-top:0.4rem">available to harvest</div>
+    </div>
+    <div class="card" style="text-align:center;padding:1.5rem">
+      <div class="text-muted" style="font-size:0.9rem;margin-bottom:0.4rem">Lifetime Earnings</div>
+      <div style="font-size:3rem;font-weight:700;color:var(--brown);line-height:1">
+        ${{ "%.2f"|format(current_user.total_earnings) }}
+      </div>
+      <div class="text-muted" style="font-size:0.82rem;margin-top:0.4rem">total earned all time</div>
+    </div>
+  </div>
+
+  <!-- Harvest section -->
+  <div class="card" style="padding:1.5rem;margin-bottom:1.25rem">
+    <div class="card-header" style="margin-bottom:1rem">🍯 Honey Harvest (Payout)</div>
+
+    {% if current_user.honeycomb_balance >= harvest_threshold %}
+      <p style="margin-bottom:1rem">
+        Your Honeycomb Balance has reached the harvest threshold!
+        You can withdraw <strong>${{ "%.2f"|format(current_user.honeycomb_balance) }}</strong> to your PayPal account.
+      </p>
+      <form method="POST" action="{{ url_for('harvest') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-gold">
+          🍯 Request Honey Harvest (${{ "%.2f"|format(current_user.honeycomb_balance) }})
+        </button>
+      </form>
+      <p class="text-muted" style="font-size:0.82rem;margin-top:0.75rem">
+        ⚠️ TEST MODE: No real payout will be made. PayPal integration coming soon!
+      </p>
+    {% else %}
+      {% set progress = (current_user.honeycomb_balance / harvest_threshold * 100)|int %}
+      <p class="text-muted" style="margin-bottom:0.75rem">
+        You need <strong>${{ "%.2f"|format(harvest_threshold) }}</strong> to request a Honey Harvest.
+        You're <strong>${{ "%.2f"|format(harvest_threshold - current_user.honeycomb_balance) }}</strong> away.
+      </p>
+      <div style="background:var(--cream-d);border-radius:20px;height:18px;overflow:hidden;margin-bottom:0.5rem">
+        <div style="background:var(--gold);height:100%;width:{{ [progress, 100]|min }}%;border-radius:20px;transition:width 0.4s"></div>
+      </div>
+      <div class="text-muted" style="font-size:0.82rem">
+        ${{ "%.2f"|format(current_user.honeycomb_balance) }} / ${{ "%.2f"|format(harvest_threshold) }}
+        ({{ progress }}%)
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Transaction history -->
+  <div class="card">
+    <div class="card-header">Earnings Transaction History</div>
+    {% if transactions %}
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Balance After</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr>
+          <td class="text-muted" style="font-size:0.83rem;white-space:nowrap">
+            {{ tx.created_at.strftime('%b %d, %Y') }}
+          </td>
+          <td>
+            {% if tx.transaction_type == 'earned' %}
+              <span class="badge badge-green">Earned</span>
+            {% elif tx.transaction_type == 'harvested' %}
+              <span class="badge badge-blue">Harvested</span>
+            {% else %}
+              <span class="badge">{{ tx.transaction_type|title }}</span>
+            {% endif %}
+          </td>
+          <td style="font-weight:600;color:{% if tx.amount > 0 %}var(--green){% else %}var(--blue){% endif %}">
+            {% if tx.amount > 0 %}+{% endif %}${{ "%.4f"|format(tx.amount) }}
+          </td>
+          <td>${{ "%.4f"|format(tx.balance_after) }}</td>
+          <td class="text-muted" style="font-size:0.85rem">{{ tx.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center" style="padding:2rem">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem">💰</div>
+      <p class="text-muted">No earnings yet. Join a Hive and start processing jobs!</p>
+    </div>
+    {% endif %}
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}

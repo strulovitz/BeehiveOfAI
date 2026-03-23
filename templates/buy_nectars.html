@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Buy Nectars — Beehive Of AI{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;margin:0 auto">
+
+  <div class="flex-between mb-2">
+    <h2>🍯 Buy Nectar Credits</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+  </div>
+
+  <!-- Current balance -->
+  <div class="card" style="background:var(--cream-d);padding:1rem;margin-bottom:1.5rem">
+    <div class="flex-between">
+      <div>
+        <span style="font-size:1.05rem;font-weight:600">Your Current Nectar Balance</span>
+        <p class="text-muted" style="font-size:0.85rem;margin-top:0.2rem">Each Nectar = 1 job submission to any Hive</p>
+      </div>
+      <div style="font-size:2rem;font-weight:700;color:var(--gold-d)">
+        🍯 {{ user_nectar_balance }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Test mode notice -->
+  <div class="alert alert-info" style="margin-bottom:1.5rem">
+    ℹ️ <strong>TEST MODE:</strong> Purchases are free during beta — no real payment is charged.
+    PayPal integration coming soon!
+  </div>
+
+  <!-- Package cards -->
+  <div class="grid-3" style="gap:1.25rem;margin-bottom:2rem">
+
+    {% for pkg_id, pkg in packages.items() %}
+    <div class="card" style="padding:1.5rem;text-align:center;position:relative;border:2px solid {% if pkg_id == 'honey_pot' %}var(--gold){% else %}var(--cream-d){% endif %}">
+
+      {% if pkg_id == 'honey_pot' %}
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--brown);font-size:0.75rem;font-weight:700;padding:0.2rem 0.75rem;border-radius:20px;white-space:nowrap">
+        ⭐ BEST VALUE
+      </div>
+      {% endif %}
+
+      <div style="font-size:3rem;margin-bottom:0.5rem">{{ pkg.emoji }}</div>
+      <h3 style="font-size:1.2rem;margin-bottom:0.25rem">{{ pkg.name }}</h3>
+
+      <div style="font-size:2.2rem;font-weight:700;color:var(--brown);margin:0.5rem 0">
+        {{ pkg.nectars }}
+        <span style="font-size:1rem;font-weight:400;color:var(--brown-l)">Nectars</span>
+      </div>
+
+      <div style="margin-bottom:0.75rem">
+        <span class="badge badge-green">{{ pkg.discount }} off</span>
+      </div>
+
+      <div style="font-size:1.5rem;font-weight:700;color:var(--gold-d);margin-bottom:0.25rem">
+        ${{ "%.2f"|format(pkg.price) }}
+      </div>
+      <div class="text-muted" style="font-size:0.82rem;margin-bottom:1.25rem">
+        ${{ "%.2f"|format(pkg.price / pkg.nectars) }} per Nectar
+      </div>
+
+      <form method="POST" action="{{ url_for('buy_nectars') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="package_id" value="{{ pkg_id }}">
+        <button type="submit" class="btn btn-gold" style="width:100%">
+          Buy {{ pkg.name }}
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- How it works -->
+  <div class="card" style="padding:1.25rem">
+    <div class="card-header" style="margin-bottom:0.75rem">How Nectars Work</div>
+    <div class="grid-3" style="gap:1rem;font-size:0.88rem">
+      <div style="text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.4rem">🛒</div>
+        <strong>1. Buy a package</strong>
+        <p class="text-muted" style="margin-top:0.25rem">Choose Honey Drop, Jar, or Pot. Bigger = more savings.</p>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.4rem">🐝</div>
+        <strong>2. Submit jobs</strong>
+        <p class="text-muted" style="margin-top:0.25rem">Each job to a Hive costs 1 Nectar. Nectars never expire.</p>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:0.4rem">🍯</div>
+        <strong>3. Get your Honey</strong>
+        <p class="text-muted" style="margin-top:0.25rem">The Hive processes your task and delivers the result.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
