@@ -123,6 +123,8 @@ class SubTask(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = db.Column(db.DateTime, nullable=True)
 
+    worker = db.relationship('User', foreign_keys=[worker_id])
+
 
 class Rating(db.Model):
     """A rating/review from one user to another after a job."""
@@ -132,6 +134,7 @@ class Rating(db.Model):
     rater_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     rated_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=True)
+    subtask_id = db.Column(db.Integer, db.ForeignKey('subtasks.id'), nullable=True)
     score = db.Column(db.Integer, nullable=False)  # 1 to 5 stars
     comment = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

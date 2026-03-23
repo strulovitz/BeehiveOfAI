@@ -30,7 +30,7 @@ WORKER_SHARE_PERCENT = 70   # 70% of remainder to Worker Bees
 NECTAR_BASE_VALUE = 0.75  # dollars
 
 # Harvest (payout) threshold
-HARVEST_THRESHOLD = 50.00  # minimum Honeycomb Balance to request a payout
+HARVEST_THRESHOLD = 10.00  # minimum Honeycomb Balance to request a payout (lowered for testing)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('BEEHIVE_SECRET_KEY', 'dev-only-secret-key-not-for-production')
@@ -348,9 +348,29 @@ def job_status(job_id):
     rated_job_ids = set()
     if is_beekeeper:
         rated_job_ids = {r.job_id for r in Rating.query.filter_by(rater_id=current_user.id).all()}
+
+    rated_subtask_ids = set()
+    if current_user.role == 'queen':
+        rated_subtask_ids = {r.subtask_id for r in Rating.query.filter_by(rater_id=current_user.id).all() if r.subtask_id}
+
+    is_worker_on_job = False
+    worker_rated_queen = False
+    if current_user.role == 'worker':
+        is_worker_on_job = any(
+            st.worker_id == current_user.id and st.status == 'completed'
+            for st in job.subtasks
+        )
+        if is_worker_on_job:
+            worker_rated_queen = Rating.query.filter_by(
+                rater_id=current_user.id, rated_user_id=hive.queen_id, job_id=job.id
+            ).first() is not None
+
     return render_template('job_status.html', job=job, hive=hive,
                            status_steps=status_steps, step_index=step_index,
-                           is_beekeeper=is_beekeeper, rated_job_ids=rated_job_ids)
+                           is_beekeeper=is_beekeeper, rated_job_ids=rated_job_ids,
+                           rated_subtask_ids=rated_subtask_ids,
+                           is_worker_on_job=is_worker_on_job,
+                           worker_rated_queen=worker_rated_queen)
 
 
 @app.route('/job/<int:job_id>/rate', methods=['GET', 'POST'])
@@ -387,6 +407,98 @@ def rate_job(job_id):
         flash('Thank you for rating this Hive!', 'success')
         return redirect(url_for('job_status', job_id=job_id))
     return render_template('rate_job.html', job=job, hive=hive, form=form)
+
+
+@app.route('/subtask/<int:subtask_id>/rate-worker', methods=['GET', 'POST'])
+@login_required
+@role_required('queen')
+def rate_worker(subtask_id):
+    st = db.session.get(SubTask, subtask_id) or abort(404)
+    job = st.job
+    hive = job.hive
+
+    if current_user.id != hive.queen_id:
+        flash('Only the Queen of this Hive can rate Workers.', 'danger')
+        return redirect(url_for('dashboard'))
+    if st.status != 'completed' or not st.worker_id:
+        flash('This subtask is not completed.', 'warning')
+        return redirect(url_for('job_status', job_id=job.id))
+    existing = Rating.query.filter_by(rater_id=current_user.id, subtask_id=subtask_id).first()
+    if existing:
+        flash('You have already rated this Worker for this subtask.', 'info')
+        return redirect(url_for('job_status', job_id=job.id))
+
+    form = RatingForm()
+    worker = db.session.get(User, st.worker_id)
+
+    if form.validate_on_submit():
+        rating = Rating(
+            rater_id=current_user.id,
+            rated_user_id=st.worker_id,
+            job_id=job.id,
+            subtask_id=subtask_id,
+            score=int(form.score.data),
+            comment=form.comment.data or None,
+        )
+        db.session.add(rating)
+        all_worker_ratings = Rating.query.filter_by(rated_user_id=st.worker_id).all()
+        total = sum(r.score for r in all_worker_ratings) + int(form.score.data)
+        count = len(all_worker_ratings) + 1
+        worker.trust_score = round((total / count) * 2, 1)
+        db.session.commit()
+        flash(f'Thank you for rating {worker.username}!', 'success')
+        return redirect(url_for('job_status', job_id=job.id))
+
+    return render_template('rate_worker.html', subtask=st, job=job, worker=worker, form=form)
+
+
+@app.route('/job/<int:job_id>/rate-queen', methods=['GET', 'POST'])
+@login_required
+@role_required('worker')
+def rate_queen(job_id):
+    job = db.session.get(Job, job_id) or abort(404)
+    hive = job.hive
+
+    participated = any(
+        st.worker_id == current_user.id and st.status == 'completed'
+        for st in job.subtasks
+    )
+    if not participated:
+        flash('You did not work on this job.', 'danger')
+        return redirect(url_for('dashboard'))
+    if job.status != 'completed':
+        flash('The job is not completed yet.', 'warning')
+        return redirect(url_for('job_status', job_id=job_id))
+    existing = Rating.query.filter_by(
+        rater_id=current_user.id, rated_user_id=hive.queen_id, job_id=job_id
+    ).first()
+    if existing:
+        flash('You have already rated the Queen for this job.', 'info')
+        return redirect(url_for('job_status', job_id=job_id))
+
+    form = RatingForm()
+    queen = hive.queen
+
+    if form.validate_on_submit():
+        rating = Rating(
+            rater_id=current_user.id,
+            rated_user_id=hive.queen_id,
+            job_id=job_id,
+            score=int(form.score.data),
+            comment=form.comment.data or None,
+        )
+        db.session.add(rating)
+        all_queen_ratings = Rating.query.filter_by(rated_user_id=hive.queen_id).all()
+        total = sum(r.score for r in all_queen_ratings) + int(form.score.data)
+        count = len(all_queen_ratings) + 1
+        new_score = round((total / count) * 2, 1)
+        queen.trust_score = new_score
+        hive.trust_score = new_score
+        db.session.commit()
+        flash(f'Thank you for rating Queen {queen.username}!', 'success')
+        return redirect(url_for('job_status', job_id=job_id))
+
+    return render_template('rate_queen.html', job=job, queen=queen, hive=hive, form=form)
 
 
 @app.route('/buy-nectars', methods=['GET', 'POST'])

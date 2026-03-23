@@ -123,6 +123,13 @@
             {% endif %}
             <div class="text-muted mt-1" style="font-size:0.78rem">
               From: <a href="{{ url_for('profile', user_id=rating.rater_id) }}">{{ rating.rater.username }}</a>
+              {% if rating.rater.role == 'beekeeper' %}
+                <span class="badge badge-gold" style="font-size:0.7rem;margin-left:0.3rem">Beekeeper Review</span>
+              {% elif rating.rater.role == 'queen' %}
+                <span class="badge badge-blue" style="font-size:0.7rem;margin-left:0.3rem">Queen Review</span>
+              {% elif rating.rater.role == 'worker' %}
+                <span class="badge badge-green" style="font-size:0.7rem;margin-left:0.3rem">Worker Review</span>
+              {% endif %}
             </div>
           </div>
         {% endfor %}

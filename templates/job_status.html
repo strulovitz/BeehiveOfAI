@@ -105,6 +105,53 @@
   </div>
   {% endif %}
 {% endif %}
+
+{% if current_user.id == hive.queen_id %}
+<div class="card">
+  <div class="card-header">🐝 Worker Contributions</div>
+  {% set completed_worker_subtasks = job.subtasks | selectattr('status', 'equalto', 'completed') | selectattr('worker_id') | list %}
+  {% if completed_worker_subtasks %}
+    {% for st in completed_worker_subtasks %}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;border-bottom:1px solid var(--cream-d)">
+      <div>
+        <strong>{{ st.worker.username }}</strong>
+        <span class="text-muted" style="font-size:0.82rem">
+          — completed {{ st.completed_at.strftime('%b %d, %H:%M') if st.completed_at else '' }}
+        </span>
+        <div class="text-muted" style="font-size:0.82rem">
+          {{ st.subtask_text[:80] }}{% if st.subtask_text|length > 80 %}…{% endif %}
+        </div>
+      </div>
+      <div>
+        {% if st.id in rated_subtask_ids %}
+          <span class="badge badge-green">✅ Rated</span>
+        {% else %}
+          <a href="{{ url_for('rate_worker', subtask_id=st.id) }}" class="btn btn-gold btn-sm">⭐ Rate</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted" style="padding:1rem">No Worker contributions to rate for this job.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if is_worker_on_job %}
+  {% if worker_rated_queen %}
+  <div class="card text-center">
+    <p>✅ You have already rated Queen {{ hive.queen.username }} for this job.</p>
+  </div>
+  {% else %}
+  <div class="card text-center">
+    <div style="font-size:1.5rem;margin-bottom:0.5rem">👑</div>
+    <p class="mb-1"><strong>How was your Queen's coordination?</strong></p>
+    <p class="text-muted mb-1" style="font-size:0.85rem">Your rating helps improve Hive management.</p>
+    <a href="{{ url_for('rate_queen', job_id=job.id) }}" class="btn btn-gold">👑 Rate Your Queen</a>
+  </div>
+  {% endif %}
+{% endif %}
+
 {% elif job.status != 'completed' %}
 <div class="card text-center" style="padding:2rem">
   <div style="font-size:2.5rem;margin-bottom:0.75rem">⏳</div>

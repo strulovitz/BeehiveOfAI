@@ -226,7 +226,9 @@ def seed():
         worker1.total_jobs = 12
         hive1.total_jobs_completed = 34
 
-        # Rating
+        db.session.flush()  # ensure subtask IDs are available
+
+        # Beekeeper rates the Hive/Queen (existing flow)
         rating1 = Rating(
             rater_id=company1.id,
             rated_user_id=queen1.id,
@@ -235,15 +237,30 @@ def seed():
             comment='Excellent work! The SWOT analysis was thorough and actionable. Will use this Hive again.',
             created_at=datetime.now(timezone.utc) - timedelta(days=4),
         )
+        # Queen rates Worker for first subtask (new flow)
         rating2 = Rating(
-            rater_id=company1.id,
+            rater_id=queen1.id,
             rated_user_id=worker1.id,
             job_id=job1.id,
-            score=4,
-            comment='Good quality sub-task results, delivered quickly.',
+            subtask_id=subtasks[0].id,
+            score=5,
+            comment='Outstanding work on the Strengths analysis. Clear and well-structured.',
             created_at=datetime.now(timezone.utc) - timedelta(days=4),
         )
-        db.session.add_all([rating1, rating2])
+        # Worker rates Queen (new flow)
+        rating3 = Rating(
+            rater_id=worker1.id,
+            rated_user_id=queen1.id,
+            job_id=job1.id,
+            score=5,
+            comment='Excellent task splitting. Each subtask was clear and well-scoped.',
+            created_at=datetime.now(timezone.utc) - timedelta(days=4),
+        )
+        db.session.add_all([rating1, rating2, rating3])
+
+        # Update trust scores based on ratings
+        queen1.trust_score = 10.0   # avg 5 stars * 2
+        worker1.trust_score = 10.0  # avg 5 stars * 2
 
         # ── Second completed job (NOT rated — so you can test rating!) ────
         job2 = Job(
