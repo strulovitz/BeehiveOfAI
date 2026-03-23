@@ -52,7 +52,7 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 - Chapter 5: The Humans in the Hive ✅
 - Chapter 6: The Road Ahead ✅
 - Chapter 7: The Technical Blueprint ✅
-- Chapter 8: TBD — next chapter
+- Chapter 8: "The Business Engine" — collecting notes below, will write when ready
 
 ### Key Architecture Decisions (from Chapter 7)
 - **Multi-backend AI:** Must support Ollama, LM Studio, llama.cpp, and vLLM (not just Ollama)
@@ -66,11 +66,50 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 - Tunnel ID: 18a52f43-e0b4-4f5b-9efd-804027df6884
 - Config: C:\Users\nir_s\.cloudflared\config.yml
 
-### What's Next — Phase 7 (starting next session, 2026-03-23)
+### Nectar Credits & Honey Packages — Business Model (decided 2026-03-23)
+
+Micro-transactions don't work with PayPal fees (~2.9% + $0.30 per transaction).
+Selling one question at $1 loses 33% to fees. Solution: **sell in bundles, pay out in batches.**
+
+**Customer-facing packages (buying Nectar credits):**
+| Package | Questions (Nectars) | Price | Discount | Name |
+|---------|---------------------|-------|----------|------|
+| Small | 20 | $18 | 10% off | **Honey Drop** |
+| Medium | 50 | $40 | 20% off | **Honey Jar** |
+| Large | 100 | $75 | 25% off | **Honey Pot** |
+
+- Internal credit unit = **Nectar** (1 question = 1 Nectar, or more for premium)
+- PayPal fee on $75 Honey Pot = ~$2.48 (3.3%) vs $0.33 per $1 transaction (33%)
+
+**Payout system (earnings for Queens & Workers):**
+- Accumulated earnings = **Honeycomb Balance**
+- Payout request = **Honey Harvest**
+- Minimum payout threshold = **Harvest Threshold** ($50 or $100)
+- PayPal fee on $50 payout = ~$1.75 (3.5%) — acceptable
+- PayPal fee on $100 payout = ~$3.20 (3.2%) — even better
+
+**Revenue split per question (using Honey Pot / 100 Nectars at $75):**
+- After PayPal intake: $72.52 net → $0.725 per Nectar
+- Hub (platform fee): 5% = $0.036
+- Queen Bee: 30% of remainder = $0.207
+- Worker Bees: 70% of remainder = $0.482 (split among all workers on the job)
+
+**Full bee-themed glossary:**
+| Business Concept | Bee Name |
+|-----------------|----------|
+| Credit/token | **Nectar** |
+| Small bundle (20) | **Honey Drop** |
+| Medium bundle (50) | **Honey Jar** |
+| Large bundle (100) | **Honey Pot** |
+| Accumulated earnings | **Honeycomb Balance** |
+| Payout request | **Honey Harvest** |
+| Minimum payout threshold | **Harvest Threshold** |
+
+### What's Next — Phase 7 (starting 2026-03-23)
 
 **Part 7A: Payments**
-- Layer 1: Internal earnings engine (Payment model, automatic split: 5% platform / 30% Queen / 70% Workers)
-- Layer 2: PayPal Commerce Platform integration (works from Israel, zero setup cost)
+- Layer 1: Internal earnings engine — Nectar credits, Honeycomb Balance tracking, revenue split (5% Hub / 30% Queen / 70% Workers of remainder)
+- Layer 2: PayPal Commerce Platform — Honey Drop/Jar/Pot purchase pages, Honey Harvest payout system
 - Payment provider decision: PayPal ONLY. No Stripe, no US LLC, no Rapyd.
 
 **Part 7B: Ratings improvements**
@@ -83,5 +122,15 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 **Future (not Phase 7):**
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
 - GUI development: Native graphical interface for HoneycombOfAI
-- Chapter 8: Next book chapter (building the product layers)
-- Chapter 8: Next book chapter
+
+### Chapter 8 Notes — "The Business Engine" (collecting ideas)
+
+This chapter will cover the full business/economic model in depth. Collecting notes here as we design and build.
+
+- **The micro-transaction problem:** Why per-question billing fails with payment processor fees (the 33% fee trap)
+- **Nectar Credits system:** The bus ticket analogy — buy in bulk, use one at a time, get a discount for bigger packages
+- **Honey Drop / Jar / Pot:** Tiered pricing with volume discounts (10% / 20% / 25% off)
+- **Honeycomb Balance & Honey Harvest:** How workers/queens accumulate earnings and get paid in batches, not per-answer
+- **The math that makes everyone profitable:** Fee analysis showing how bundling drops PayPal's cut from 33% to ~3%
+- **SMS notifications (Twilio):** How the hive keeps everyone informed — buzz alerts when jobs arrive, complete, etc. (add details after Phase 7C)
+- *(add more ideas here as they come up)*
