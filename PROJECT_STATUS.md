@@ -52,7 +52,8 @@ On 2026-03-22, Nir submitted a real job via the Beekeeper dashboard (company1@te
 - Chapter 5: The Humans in the Hive ✅
 - Chapter 6: The Road Ahead ✅
 - Chapter 7: The Technical Blueprint ✅
-- Chapter 8: "The Business Engine" — collecting notes below, will write when ready
+- Chapter 8: "The Business Engine — Money, Honey, and the Invisible Walls" ✅ (2026-03-23)
+- Chapter 9: TBD — scale, multi-machine growth
 
 ### Key Architecture Decisions (from Chapter 7)
 - **Multi-backend AI:** Must support Ollama, LM Studio, llama.cpp, and vLLM (not just Ollama)
@@ -125,6 +126,20 @@ Selling one question at $1 loses 33% to fees. Solution: **sell in bundles, pay o
 
 **Part 7C: SMS notifications**
 - Twilio integration for job submitted / completed notifications
+
+**Pivot Strategy (if payments don't work):**
+- Release as free/open-source project for companies to deploy
+- Offer consulting/implementation services
+- Acqui-hire path (like OpenClaw→OpenAI, MoltBook→Meta)
+- Enterprise self-hosted licensing (no external payments needed)
+- The book as portfolio piece / lead generator
+
+**Alternative Payment Providers Researched (2026-03-23):**
+- **Payoneer** (Israeli company, Petah Tikva!) — STRONGEST alternative. Used by Fiverr, Upwork, Amazon. Mass Payout API, $1.50/payout, 1-3 day approval. If PayPal Payouts denied, pivot to Payoneer.
+- **Wise Business** — Works from Israel, 0.4-1.5% fees, API for batch payments. Good for payouts only.
+- **Paddle** — Merchant of Record, handles all tax/compliance, 5%+$0.50. Good for selling Nectar credits.
+- **Tipalti** — Israeli company, enterprise-level ($299+/mo), good at scale.
+- REJECTED: Stripe (needs US LLC), Deel (HR not marketplace), crypto (too niche)
 
 **Future (not Phase 7):**
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
