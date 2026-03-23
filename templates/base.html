@@ -308,7 +308,7 @@
       <span class="nav-sep">|</span>
       <a href="{{ url_for('dashboard') }}">Dashboard</a>
       {% if current_user.role == 'beekeeper' %}
-        <a href="{{ url_for('buy_nectars') }}" style="color:var(--gold);font-weight:600">🍯 {{ user_nectar_balance }} Nectars</a>
+        <a href="{{ url_for('my_balance') }}" style="color:var(--gold);font-weight:600">🍯 {{ user_nectar_balance }} Nectars</a>
       {% else %}
         <a href="{{ url_for('my_balance') }}" style="color:var(--gold);font-weight:600">💰 ${{ "%.2f"|format(user_honeycomb_balance) }}</a>
       {% endif %}
