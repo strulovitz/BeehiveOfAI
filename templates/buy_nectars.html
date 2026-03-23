@@ -22,11 +22,17 @@
     </div>
   </div>
 
-  <!-- Test mode notice -->
+  <!-- Payment mode notice -->
+  {% if paypal_enabled %}
+  <div class="alert alert-success" style="margin-bottom:1.5rem">
+    ✅ <strong>Secure payments via PayPal.</strong> You will be redirected to PayPal to complete your purchase safely.
+  </div>
+  {% else %}
   <div class="alert alert-info" style="margin-bottom:1.5rem">
     ℹ️ <strong>TEST MODE:</strong> Purchases are free during beta — no real payment is charged.
     PayPal integration coming soon!
   </div>
+  {% endif %}
 
   <!-- Package cards -->
   <div class="grid-3" style="gap:1.25rem;margin-bottom:2rem">

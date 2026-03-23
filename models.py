@@ -167,3 +167,19 @@ class EarningsTransaction(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = db.relationship('User', backref='earnings_transactions')
+
+
+class PayPalOrder(db.Model):
+    """Track PayPal checkout orders — maps PayPal order ID to our package purchase."""
+    __tablename__ = 'paypal_orders'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    paypal_order_id = db.Column(db.String(100), unique=True, nullable=False)
+    package_id = db.Column(db.String(20), nullable=False)   # 'honey_drop', 'honey_jar', 'honey_pot'
+    amount_usd = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default='created')    # 'created', 'captured', 'cancelled', 'failed'
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    captured_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship('User', backref='paypal_orders')

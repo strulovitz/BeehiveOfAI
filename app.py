@@ -10,7 +10,8 @@ from flask import Flask, render_template, redirect, url_for, flash, request, jso
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
 from functools import wraps
-from models import db, User, Hive, HiveMember, Job, SubTask, Rating, NectarTransaction, EarningsTransaction
+import paypal_service
+from models import db, User, Hive, HiveMember, Job, SubTask, Rating, NectarTransaction, EarningsTransaction, PayPalOrder
 from forms import RegisterForm, LoginForm, CreateHiveForm, SubmitJobForm, RatingForm
 
 # ── Nectar Credit Packages ────────────────────────────────────────────────────
@@ -53,12 +54,14 @@ def load_user(user_id):
 @app.context_processor
 def inject_balances():
     """Make balance info available in all templates."""
+    paypal_on = paypal_service.is_configured()
     if current_user.is_authenticated:
         return {
-            'user_nectar_balance': current_user.nectar_balance,
+            'user_nectar_balance':    current_user.nectar_balance,
             'user_honeycomb_balance': current_user.honeycomb_balance,
+            'paypal_enabled':         paypal_on,
         }
-    return {}
+    return {'paypal_enabled': paypal_on}
 
 
 # ── Role decorators ────────────────────────────────────────────────────────────
@@ -396,18 +399,107 @@ def buy_nectars():
         if not package:
             flash('Invalid package selected.', 'danger')
             return redirect(url_for('buy_nectars'))
-        current_user.nectar_balance += package['nectars']
-        db.session.add(NectarTransaction(
-            user_id=current_user.id,
-            amount=package['nectars'],
-            balance_after=current_user.nectar_balance,
-            transaction_type='purchase',
-            description=f"Purchased {package['name']} ({package['nectars']} Nectars) — TEST MODE",
-        ))
-        db.session.commit()
-        flash(f"TEST MODE: No real payment charged. You received {package['nectars']} Nectars ({package['name']})!", 'success')
-        return redirect(url_for('dashboard'))
+
+        if paypal_service.is_configured():
+            # Real PayPal checkout — create order and redirect buyer to PayPal
+            try:
+                result = paypal_service.create_order(
+                    package_name=package['name'],
+                    amount_usd=package['price'],
+                    return_url=url_for('paypal_success', _external=True),
+                    cancel_url=url_for('paypal_cancel', _external=True),
+                )
+                pp_order = PayPalOrder(
+                    user_id=current_user.id,
+                    paypal_order_id=result['id'],
+                    package_id=package_id,
+                    amount_usd=package['price'],
+                    status='created',
+                )
+                db.session.add(pp_order)
+                db.session.commit()
+                return redirect(result['approve_url'])
+            except Exception as e:
+                flash(f'PayPal error: {str(e)}. Please try again.', 'danger')
+                return redirect(url_for('buy_nectars'))
+        else:
+            # Test mode — free Nectars, no real payment
+            current_user.nectar_balance += package['nectars']
+            db.session.add(NectarTransaction(
+                user_id=current_user.id,
+                amount=package['nectars'],
+                balance_after=current_user.nectar_balance,
+                transaction_type='purchase',
+                description=f"Purchased {package['name']} ({package['nectars']} Nectars) — TEST MODE",
+            ))
+            db.session.commit()
+            flash(f"TEST MODE: No real payment charged. You received {package['nectars']} Nectars ({package['name']})!", 'success')
+            return redirect(url_for('dashboard'))
+
     return render_template('buy_nectars.html', packages=NECTAR_PACKAGES)
+
+
+@app.route('/paypal/success')
+@login_required
+def paypal_success():
+    """PayPal redirects here after the buyer approves the payment."""
+    order_id = request.args.get('token')
+    if not order_id:
+        flash('Invalid PayPal response.', 'danger')
+        return redirect(url_for('buy_nectars'))
+
+    pp_order = PayPalOrder.query.filter_by(
+        paypal_order_id=order_id, user_id=current_user.id
+    ).first()
+    if not pp_order or pp_order.status != 'created':
+        flash('Order not found or already processed.', 'warning')
+        return redirect(url_for('buy_nectars'))
+
+    try:
+        capture = paypal_service.capture_order(order_id)
+        if capture.get('status') == 'COMPLETED':
+            package = NECTAR_PACKAGES.get(pp_order.package_id)
+            if package:
+                current_user.nectar_balance += package['nectars']
+                db.session.add(NectarTransaction(
+                    user_id=current_user.id,
+                    amount=package['nectars'],
+                    balance_after=current_user.nectar_balance,
+                    transaction_type='purchase',
+                    description=f"Purchased {package['name']} ({package['nectars']} Nectars) via PayPal",
+                ))
+                pp_order.status = 'captured'
+                pp_order.captured_at = datetime.now(timezone.utc)
+                db.session.commit()
+                flash(f"Payment successful! {package['nectars']} Nectars ({package['name']}) added to your account.", 'success')
+            else:
+                flash('Package not found. Please contact support.', 'danger')
+        else:
+            pp_order.status = 'failed'
+            db.session.commit()
+            flash('Payment was not completed. Please try again.', 'warning')
+    except Exception as e:
+        pp_order.status = 'failed'
+        db.session.commit()
+        flash(f'Error capturing payment: {str(e)}', 'danger')
+
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/paypal/cancel')
+@login_required
+def paypal_cancel():
+    """PayPal redirects here if the buyer cancels."""
+    order_id = request.args.get('token')
+    if order_id:
+        pp_order = PayPalOrder.query.filter_by(
+            paypal_order_id=order_id, user_id=current_user.id
+        ).first()
+        if pp_order and pp_order.status == 'created':
+            pp_order.status = 'cancelled'
+            db.session.commit()
+    flash('Payment cancelled. No charges were made.', 'info')
+    return redirect(url_for('buy_nectars'))
 
 
 @app.route('/my-balance')
@@ -437,18 +529,43 @@ def harvest():
         flash(f'You need at least ${HARVEST_THRESHOLD:.2f} in your Honeycomb Balance to harvest. '
               f'Current balance: ${current_user.honeycomb_balance:.2f}', 'warning')
         return redirect(url_for('my_balance'))
+
     amount = current_user.honeycomb_balance
-    db.session.add(EarningsTransaction(
-        user_id=current_user.id,
-        amount=-amount,
-        balance_after=0.0,
-        transaction_type='harvested',
-        description=f'Honey Harvest of ${amount:.2f} — TEST MODE (PayPal payout coming soon)',
-    ))
-    current_user.honeycomb_balance = 0.0
-    db.session.commit()
-    flash(f'🍯 Honey Harvest requested! ${amount:.2f} will be sent to your PayPal. '
-          f'(TEST MODE: No real payout yet — PayPal integration coming soon)', 'success')
+
+    if paypal_service.is_configured():
+        # Real PayPal payout
+        try:
+            paypal_service.send_payout(
+                recipient_email=current_user.email,
+                amount_usd=amount,
+                note='Honey Harvest from BeehiveOfAI — Thank you for your work!',
+            )
+            db.session.add(EarningsTransaction(
+                user_id=current_user.id,
+                amount=-amount,
+                balance_after=0.0,
+                transaction_type='harvested',
+                description=f'Honey Harvest of ${amount:.2f} sent to {current_user.email} via PayPal',
+            ))
+            current_user.honeycomb_balance = 0.0
+            db.session.commit()
+            flash(f'🍯 Honey Harvest complete! ${amount:.2f} has been sent to your PayPal ({current_user.email}).', 'success')
+        except Exception as e:
+            flash(f'PayPal payout error: {str(e)}. Your balance has not been changed. Please try again.', 'danger')
+    else:
+        # Test mode — no real payment
+        db.session.add(EarningsTransaction(
+            user_id=current_user.id,
+            amount=-amount,
+            balance_after=0.0,
+            transaction_type='harvested',
+            description=f'Honey Harvest of ${amount:.2f} — TEST MODE (PayPal payout coming soon)',
+        ))
+        current_user.honeycomb_balance = 0.0
+        db.session.commit()
+        flash(f'🍯 Honey Harvest requested! ${amount:.2f} will be sent to your PayPal. '
+              f'(TEST MODE: No real payout yet)', 'success')
+
     return redirect(url_for('my_balance'))
 
 

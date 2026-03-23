@@ -105,9 +105,15 @@
           🍯 Request Honey Harvest (${{ "%.2f"|format(current_user.honeycomb_balance) }})
         </button>
       </form>
+      {% if paypal_enabled %}
+      <p class="text-muted" style="font-size:0.82rem;margin-top:0.75rem">
+        Payout will be sent to your PayPal account: <strong>{{ current_user.email }}</strong>
+      </p>
+      {% else %}
       <p class="text-muted" style="font-size:0.82rem;margin-top:0.75rem">
         ⚠️ TEST MODE: No real payout will be made. PayPal integration coming soon!
       </p>
+      {% endif %}
     {% else %}
       {% set progress = (current_user.honeycomb_balance / harvest_threshold * 100)|int %}
       <p class="text-muted" style="margin-bottom:0.75rem">
