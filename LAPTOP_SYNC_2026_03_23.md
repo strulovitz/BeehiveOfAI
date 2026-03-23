@@ -110,19 +110,22 @@ Deleted and reseeded DB after 7B (new `subtask_id` column on ratings table).
 6. Solution: **Twilio Verify API** — completely different product, no phone number purchase needed, no A2P registration, works from any country
 7. Nir created a Twilio account + Verify Service named "BeehiveOfAI" — credentials ready
 
-**New Phase 7C = SMS Phone Verification:**
+**Phase 7C = SMS Phone Verification — DONE ✅ (2026-03-23 late night)**
 - Register → enter phone number (required) → receive 6-digit code → type it in → verified
 - Uses Twilio Verify API (not Messages API) — Twilio generates/sends/checks codes
 - Unverified users can't submit jobs, join hives, create hives, or request payouts
 - Reuses existing `is_verified` field and "✅ Verified" profile badge
+- Profile page has phone edit form for users without a phone (handles legacy/seed users)
+- **Tested with real Twilio — Nir received real SMS on his phone ✅**
+- New files: `sms_service.py`, `templates/verify_phone.html`
+- Modified: `app.py`, `forms.py`, `requirements.txt`, `seed_data.py`, `templates/register.html`, `templates/profile.html`
 - Plan in `PHASE7C_SMS_VERIFICATION_PLAN.md`
 
 ## WHAT'S NEXT (Priority Order)
 
-1. Phase 7C: SMS phone VERIFICATION — plan ready in `PHASE7C_SMS_VERIFICATION_PLAN.md`
-2. Multi-backend support (LM Studio, llama.cpp, vLLM)
-3. Native GUI for HoneycombOfAI
-4. Book rewrite (when coding is more stable)
+1. Multi-backend support (LM Studio, llama.cpp, vLLM) — in HoneycombOfAI repo
+2. Native GUI for HoneycombOfAI
+3. Book rewrite (when coding is more stable)
 
 ---
 
