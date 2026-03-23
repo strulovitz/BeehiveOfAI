@@ -13,7 +13,8 @@ class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
-    phone = StringField('Phone Number (optional)', validators=[Optional()])
+    phone = StringField('Phone Number (e.g. +972544752626)',
+                        validators=[DataRequired(), Length(min=10, max=20)])
     role = SelectField('I want to be a:', choices=[
         ('worker', '🐝 Worker Bee — Earn money by processing AI tasks'),
         ('queen', '👑 Queen Bee — Lead a team of Worker Bees'),
@@ -55,6 +56,22 @@ class SubmitJobForm(FlaskForm):
     nectar = TextAreaField('Your Task (Nectar)', validators=[DataRequired(), Length(min=20, max=10000)],
                            render_kw={"rows": 8, "placeholder": "Describe the AI task you want the Hive to process..."})
     submit = SubmitField('🍯 Submit Task to Hive')
+
+
+class UpdatePhoneForm(FlaskForm):
+    phone = StringField('Phone Number (e.g. +972544752626)',
+                        validators=[DataRequired(), Length(min=10, max=20)])
+    submit = SubmitField('Save & Send Verification Code')
+
+
+class VerifyPhoneForm(FlaskForm):
+    digit1 = StringField('', validators=[DataRequired(), Length(min=1, max=1)])
+    digit2 = StringField('', validators=[DataRequired(), Length(min=1, max=1)])
+    digit3 = StringField('', validators=[DataRequired(), Length(min=1, max=1)])
+    digit4 = StringField('', validators=[DataRequired(), Length(min=1, max=1)])
+    digit5 = StringField('', validators=[DataRequired(), Length(min=1, max=1)])
+    digit6 = StringField('', validators=[DataRequired(), Length(min=1, max=1)])
+    submit = SubmitField('Verify')
 
 
 class RatingForm(FlaskForm):

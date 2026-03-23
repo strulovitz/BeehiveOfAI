@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Verify Your Phone — Beehive Of AI{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:2rem auto">
+  <div class="card">
+    <div class="text-center mb-2">
+      <div style="font-size:2.5rem">📱</div>
+      <h2 style="margin-bottom:0.25rem">Verify Your Phone</h2>
+      <p class="text-muted">We sent a 6-digit code to <strong>{{ masked_phone }}</strong></p>
+    </div>
+
+    <form method="POST" action="{{ url_for('verify_phone', user_id=user.id) }}">
+      {{ form.hidden_tag() }}
+
+      <div style="display:flex;justify-content:center;gap:0.5rem;margin:1.5rem 0">
+        {{ form.digit1(class="form-control", style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:700", maxlength="1", inputmode="numeric", pattern="[0-9]", autocomplete="one-time-code") }}
+        {{ form.digit2(class="form-control", style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:700", maxlength="1", inputmode="numeric", pattern="[0-9]") }}
+        {{ form.digit3(class="form-control", style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:700", maxlength="1", inputmode="numeric", pattern="[0-9]") }}
+        {{ form.digit4(class="form-control", style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:700", maxlength="1", inputmode="numeric", pattern="[0-9]") }}
+        {{ form.digit5(class="form-control", style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:700", maxlength="1", inputmode="numeric", pattern="[0-9]") }}
+        {{ form.digit6(class="form-control", style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:700", maxlength="1", inputmode="numeric", pattern="[0-9]") }}
+      </div>
+
+      {% for field in [form.digit1, form.digit2, form.digit3, form.digit4, form.digit5, form.digit6] %}
+        {% for error in field.errors %}
+          <div class="field-error text-center">{{ error }}</div>
+        {% endfor %}
+      {% endfor %}
+
+      <div class="mt-2">
+        {{ form.submit(class="btn btn-gold btn-lg", style="width:100%") }}
+      </div>
+    </form>
+
+    <div class="text-center mt-2">
+      <p class="text-muted" style="font-size:0.85rem">Didn't receive the code?</p>
+      <form method="POST" action="{{ url_for('resend_verification', user_id=user.id) }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline btn-sm">Resend Code</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auto-advance: when user types a digit, focus moves to the next box
+document.addEventListener('DOMContentLoaded', function() {
+  const inputs = document.querySelectorAll('input[maxlength="1"]');
+  inputs.forEach(function(input, index) {
+    input.addEventListener('input', function() {
+      if (this.value.length === 1 && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+      }
+    });
+    // Allow backspace to go to previous box
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && this.value === '' && index > 0) {
+        inputs[index - 1].focus();
+      }
+    });
+  });
+  // Auto-focus first box
+  if (inputs.length > 0) inputs[0].focus();
+});
+</script>
+{% endblock %}

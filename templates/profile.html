@@ -46,11 +46,38 @@
         {% if user.phone %}
         <tr>
           <td><strong>Phone</strong></td>
-          <td>{{ user.phone }}</td>
+          <td>
+            {{ user.phone }}
+            {% if not user.is_verified %}
+              <span class="badge badge-red" style="margin-left:0.3rem">Not Verified</span>
+            {% endif %}
+          </td>
         </tr>
         {% endif %}
         {% endif %}
       </table>
+
+      {% if is_own_profile and not user.is_verified %}
+      <div style="border-top:1px solid var(--cream-d);padding-top:1rem;margin-top:0.5rem">
+        <p class="text-muted" style="font-size:0.85rem;margin-bottom:0.75rem">
+          {% if user.phone %}
+            Your phone number is not yet verified. Enter your number below to receive a new code.
+          {% else %}
+            You don't have a phone number on file. Add one below to verify your account.
+          {% endif %}
+        </p>
+        <form method="POST" action="{{ url_for('update_phone', user_id=user.id) }}">
+          {{ phone_form.hidden_tag() }}
+          <div style="display:flex;gap:0.5rem;align-items:flex-start">
+            {{ phone_form.phone(class="form-control", placeholder="+972544752626", value=user.phone or '') }}
+            {{ phone_form.submit(class="btn btn-gold btn-sm", style="white-space:nowrap") }}
+          </div>
+          {% for error in phone_form.phone.errors %}
+            <div class="field-error">{{ error }}</div>
+          {% endfor %}
+        </form>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Trust score -->

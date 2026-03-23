@@ -37,6 +37,7 @@ def seed():
             is_verified=True,
         )
         worker1.set_password('test123')
+        worker1.phone = '+972501234567'
 
         queen1 = User(
             username='queen1',
@@ -49,6 +50,7 @@ def seed():
             is_verified=True,
         )
         queen1.set_password('test123')
+        queen1.phone = '+972509876543'
 
         company1 = User(
             username='company1',

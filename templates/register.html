@@ -47,7 +47,11 @@
 
       <div class="form-group">
         {{ form.phone.label }}
-        {{ form.phone(class="form-control", placeholder="+1 555 000 0000") }}
+        {{ form.phone(class="form-control", placeholder="+972544752626") }}
+        <p class="text-muted mt-1" style="font-size:0.8rem">
+          Required for verification. Use international format with country code (e.g. +972 for Israel, +1 for US).
+          We'll send a one-time code to verify you're a real person.
+        </p>
         {% for error in form.phone.errors %}
           <div class="field-error">{{ error }}</div>
         {% endfor %}

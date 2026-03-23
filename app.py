@@ -11,8 +11,9 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_wtf.csrf import CSRFProtect
 from functools import wraps
 import paypal_service
+import sms_service
 from models import db, User, Hive, HiveMember, Job, SubTask, Rating, NectarTransaction, EarningsTransaction, PayPalOrder
-from forms import RegisterForm, LoginForm, CreateHiveForm, SubmitJobForm, RatingForm
+from forms import RegisterForm, LoginForm, CreateHiveForm, SubmitJobForm, RatingForm, VerifyPhoneForm, UpdatePhoneForm
 
 # ── Nectar Credit Packages ────────────────────────────────────────────────────
 NECTAR_PACKAGES = {
@@ -135,9 +136,52 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('Account created! Please log in.', 'success')
-        return redirect(url_for('login'))
+        # Send verification SMS
+        sms_service.send_verification(user.phone)
+        flash('Account created! We sent a verification code to your phone.', 'info')
+        return redirect(url_for('verify_phone', user_id=user.id))
     return render_template('register.html', form=form)
+
+
+@app.route('/verify-phone/<int:user_id>', methods=['GET', 'POST'])
+def verify_phone(user_id):
+    user = db.session.get(User, user_id) or abort(404)
+    if user.is_verified:
+        flash('Your phone is already verified!', 'info')
+        return redirect(url_for('login'))
+
+    # User has no phone number — can't verify. Send them to their profile to add one.
+    if not user.phone:
+        flash('You need to add a phone number to your profile before you can verify.', 'warning')
+        return redirect(url_for('profile', user_id=user.id))
+
+    form = VerifyPhoneForm()
+
+    if form.validate_on_submit():
+        code = (form.digit1.data + form.digit2.data + form.digit3.data +
+                form.digit4.data + form.digit5.data + form.digit6.data)
+        if sms_service.check_verification(user.phone, code):
+            user.is_verified = True
+            db.session.commit()
+            flash('Phone verified! You can now log in.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Invalid code. Please check your phone and try again.', 'danger')
+
+    # Mask the phone number for display: +972****2626
+    masked = user.phone[:4] + '****' + user.phone[-4:] if len(user.phone) > 8 else '****'
+    return render_template('verify_phone.html', form=form, user=user, masked_phone=masked)
+
+
+@app.route('/verify-phone/<int:user_id>/resend', methods=['POST'])
+def resend_verification(user_id):
+    user = db.session.get(User, user_id) or abort(404)
+    if user.is_verified:
+        flash('Your phone is already verified!', 'info')
+        return redirect(url_for('login'))
+    sms_service.send_verification(user.phone)
+    flash('A new verification code has been sent to your phone!', 'info')
+    return redirect(url_for('verify_phone', user_id=user.id))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -168,6 +212,9 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    if not current_user.is_verified:
+        flash('Please verify your phone number to use the platform.', 'warning')
+        return redirect(url_for('verify_phone', user_id=current_user.id))
     data = {}
     if current_user.role == 'worker':
         memberships = HiveMember.query.filter_by(user_id=current_user.id, status='active').all()
@@ -209,6 +256,9 @@ def hives():
 @login_required
 @role_required('queen')
 def create_hive():
+    if not current_user.is_verified:
+        flash('Please verify your phone number first.', 'warning')
+        return redirect(url_for('verify_phone', user_id=current_user.id))
     form = CreateHiveForm()
     if form.validate_on_submit():
         if Hive.query.filter_by(name=form.name.data).first():
@@ -254,6 +304,9 @@ def hive_detail(hive_id):
 @login_required
 @role_required('worker')
 def join_hive(hive_id):
+    if not current_user.is_verified:
+        flash('Please verify your phone number first.', 'warning')
+        return redirect(url_for('verify_phone', user_id=current_user.id))
     hive = db.session.get(Hive, hive_id) or abort(404)
     existing = HiveMember.query.filter_by(hive_id=hive_id, user_id=current_user.id).first()
     if existing:
@@ -294,6 +347,9 @@ def leave_hive(hive_id):
 @login_required
 @role_required('beekeeper')
 def submit_job(hive_id):
+    if not current_user.is_verified:
+        flash('Please verify your phone number first.', 'warning')
+        return redirect(url_for('verify_phone', user_id=current_user.id))
     hive = db.session.get(Hive, hive_id) or abort(404)
     form = SubmitJobForm()
     if form.validate_on_submit():
@@ -637,6 +693,9 @@ def my_balance():
 @login_required
 @role_required('queen', 'worker')
 def harvest():
+    if not current_user.is_verified:
+        flash('Please verify your phone number first.', 'warning')
+        return redirect(url_for('verify_phone', user_id=current_user.id))
     if current_user.honeycomb_balance < HARVEST_THRESHOLD:
         flash(f'You need at least ${HARVEST_THRESHOLD:.2f} in your Honeycomb Balance to harvest. '
               f'Current balance: ${current_user.honeycomb_balance:.2f}', 'warning')
@@ -687,8 +746,28 @@ def profile(user_id):
     ratings = Rating.query.filter_by(rated_user_id=user_id).order_by(Rating.created_at.desc()).all()
     avg_rating = (sum(r.score for r in ratings) / len(ratings)) if ratings else None
     is_own_profile = current_user.is_authenticated and current_user.id == user_id
+    phone_form = UpdatePhoneForm() if is_own_profile else None
     return render_template('profile.html', user=user, ratings=ratings,
-                           avg_rating=avg_rating, is_own_profile=is_own_profile)
+                           avg_rating=avg_rating, is_own_profile=is_own_profile,
+                           phone_form=phone_form)
+
+
+@app.route('/profile/<int:user_id>/update-phone', methods=['POST'])
+@login_required
+def update_phone(user_id):
+    if current_user.id != user_id:
+        abort(403)
+    form = UpdatePhoneForm()
+    if form.validate_on_submit():
+        current_user.phone = form.phone.data
+        current_user.is_verified = False  # Must re-verify new number
+        db.session.commit()
+        sms_service.send_verification(current_user.phone)
+        flash('Phone number saved! We sent a verification code to your phone.', 'info')
+        return redirect(url_for('verify_phone', user_id=current_user.id))
+    # Form validation failed — go back to profile
+    flash('Invalid phone number. Please use international format, e.g. +972544752626', 'danger')
+    return redirect(url_for('profile', user_id=user_id))
 
 
 # ── API ────────────────────────────────────────────────────────────────────────
