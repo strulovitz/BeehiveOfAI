@@ -3,7 +3,7 @@
 > This file is shared between Desktop and Laptop Claude Code instances via GitHub.
 > Update it whenever significant progress is made.
 
-## Last Updated: 2026-03-22 (evening)
+## Last Updated: 2026-03-23 (evening)
 
 ## Current Phase: Phase 7 — Next Steps (Phase 6 COMPLETE ✅)
 
@@ -109,8 +109,15 @@ Selling one question at $1 loses 33% to fees. Solution: **sell in bundles, pay o
 
 **Part 7A: Payments**
 - Layer 1: Internal earnings engine ✅ DONE (2026-03-23) — Nectar credits, Honeycomb Balance, revenue split, buy/harvest pages, navbar balances, tested live on beehiveofai.com
-- Layer 2: PayPal Commerce Platform — Honey Drop/Jar/Pot real purchases, Honey Harvest real payouts (next)
+- Layer 2: PayPal Merchant mode (Orders API v2 + Standard Payouts API) — CODE DONE ✅
+  - PayPal checkout (buying Nectars): TESTED & WORKING in sandbox ✅ (2026-03-23)
+  - PayPal Payouts (Honey Harvest): Code ready, WAITING for PayPal to approve Payouts API access ⏳
+  - paypal_service.py: Direct REST API wrapper (no SDK), two-mode (sandbox/live)
+  - PayPalOrder model: Tracks orders for double-spend protection
+  - Graceful fallback: If PayPal env vars not set → free test mode
 - Payment provider decision: PayPal ONLY. No Stripe, no US LLC, no Rapyd.
+- PayPal Commerce Platform REJECTED — doesn't support Israel (only ~32 countries)
+- Using regular PayPal Merchant mode instead — Israel is "Fully Localized"
 
 **Part 7B: Ratings improvements**
 - Allow Queen to rate Workers after job completion
@@ -132,5 +139,16 @@ This chapter will cover the full business/economic model in depth. Collecting no
 - **Honey Drop / Jar / Pot:** Tiered pricing with volume discounts (10% / 20% / 25% off)
 - **Honeycomb Balance & Honey Harvest:** How workers/queens accumulate earnings and get paid in batches, not per-answer
 - **The math that makes everyone profitable:** Fee analysis showing how bundling drops PayPal's cut from 33% to ~3%
+- **PayPal from Israel — the real story:** Israel is "Fully Localized" for PayPal Merchant mode, but cannot fund PayPal from Israeli bank (balance comes from received payments only). $750/day withdrawal limit via Visa card. No hidden IRS trap (unlike Stripe). Total marketplace cycle fees: 5-9%.
+- **PayPal Commerce Platform vs Merchant mode:** Why we use Merchant mode (Commerce Platform doesn't support Israel). Orders API v2 for money-in, Standard Payouts API for money-out. Our code handles the marketplace splitting logic internally.
 - **SMS notifications (Twilio):** How the hive keeps everyone informed — buzz alerts when jobs arrive, complete, etc. (add details after Phase 7C)
 - *(add more ideas here as they come up)*
+
+### PayPal Israel Limitations (documented 2026-03-23)
+- Cannot fund PayPal from Israeli bank — balance ONLY from received payments
+- $750/day withdrawal limit via Israeli Visa card (workaround: US bank account, $35/withdrawal)
+- Cannot use Israeli credit card to send money — only PayPal balance
+- Most enterprise features NOT available for Israeli accounts
+- Fees: 3.4%+1.20ILS (receive) + 2% capped (payout) + 2.5% (currency conversion)
+- Tax: Report to Israeli Tax Authority + Bituach Leumi + VAT (17%). Need Israeli accountant.
+- NO US entity required, NO IRS 1099 risk to us (unlike Stripe)
