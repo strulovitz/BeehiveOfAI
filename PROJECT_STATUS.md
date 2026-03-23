@@ -106,19 +106,43 @@ Selling one question at $1 loses 33% to fees. Solution: **sell in bundles, pay o
 | Payout request | **Honey Harvest** |
 | Minimum payout threshold | **Harvest Threshold** |
 
-### What's Next — Phase 7 (starting 2026-03-23)
+### THE PIVOT (decided 2026-03-23 evening)
 
-**Part 7A: Payments**
-- Layer 1: Internal earnings engine ✅ DONE (2026-03-23) — Nectar credits, Honeycomb Balance, revenue split, buy/harvest pages, navbar balances, tested live on beehiveofai.com
-- Layer 2: PayPal Merchant mode (Orders API v2 + Standard Payouts API) — CODE DONE ✅
-  - PayPal checkout (buying Nectars): TESTED & WORKING in sandbox ✅ (2026-03-23)
-  - PayPal Payouts (Honey Harvest): Code ready, WAITING for PayPal to approve Payouts API access ⏳
-  - paypal_service.py: Direct REST API wrapper (no SDK), two-mode (sandbox/live)
-  - PayPalOrder model: Tracks orders for double-spend protection
-  - Graceful fallback: If PayPal env vars not set → free test mode
-- Payment provider decision: PayPal ONLY. No Stripe, no US LLC, no Rapyd.
-- PayPal Commerce Platform REJECTED — doesn't support Israel (only ~32 countries)
-- Using regular PayPal Merchant mode instead — Israel is "Fully Localized"
+**Running payments from Israel as a solo developer is not viable.** After exhaustive research:
+- **Stripe** — Requires US LLC ($400-700/year + IRS risk). REJECTED.
+- **PayPal Commerce Platform** — Doesn't support Israel. REJECTED.
+- **PayPal Merchant (Orders API)** — Works for RECEIVING payments ✅ (tested in sandbox)
+- **PayPal Payouts** — Applied for access, unlikely to be approved (no real users, website offline at night)
+- **Payoneer** — Israeli company, but horror stories: frozen funds, locked accounts, poor support. REJECTED.
+- **Wise, Paddle, Tipalti** — Researched, each has limitations. Not pursuing.
+
+**New Direction: BeehiveOfAI is now a FREE, OPEN-SOURCE project.**
+
+The project is reframed from "I am running this business" to:
+> "I built the complete blueprint — here's how YOU can build this business."
+
+**Target audiences for the project:**
+1. **Companies with idle GPU capacity** — "Use your computers' idle time to earn money processing AI tasks"
+2. **Entrepreneurs** — "Start a lucrative AI services business using this free platform"
+3. **AI developers** — "Deploy your own distributed AI marketplace"
+
+**How Nir benefits:**
+- Publicity from the project + book → visibility in AI/tech communities
+- Consulting/implementation services for companies wanting to deploy
+- Acqui-hire opportunity (OpenClaw→OpenAI, MoltBook→Meta pattern)
+- The book as a portfolio piece and lead generator
+- Enterprise licensing for self-hosted deployments
+
+**The book is being reframed** to address the READER as "YOU" — the person who will deploy this.
+Payment chapter becomes a guide: "if YOU are in the US, use Stripe Connect. If YOU are in EU, use PayPal. Here are all the options we researched."
+
+### What Was Built (Phase 7A) — Stays in the Repo as Working Example
+- Layer 1: Internal Nectar Credits engine, Honeycomb Balance, revenue split ✅
+- Layer 2: PayPal Orders API integration (checkout works!) ✅
+- paypal_service.py: Complete REST API wrapper, two-mode (sandbox/live) ✅
+- All payment code stays as a working reference for deployers
+
+### What's Next
 
 **Part 7B: Ratings improvements**
 - Allow Queen to rate Workers after job completion
@@ -127,43 +151,27 @@ Selling one question at $1 loses 33% to fees. Solution: **sell in bundles, pay o
 **Part 7C: SMS notifications**
 - Twilio integration for job submitted / completed notifications
 
-**Pivot Strategy (if payments don't work):**
-- Release as free/open-source project for companies to deploy
-- Offer consulting/implementation services
-- Acqui-hire path (like OpenClaw→OpenAI, MoltBook→Meta)
-- Enterprise self-hosted licensing (no external payments needed)
-- The book as portfolio piece / lead generator
+**Deployer Documentation:**
+- Payment setup guide for deployers (Stripe/PayPal/etc. by country)
+- Deployment guide (how to run BeehiveOfAI for your organization)
+- README rewrite with "YOU" framing
 
-**Alternative Payment Providers Researched (2026-03-23):**
-- **Payoneer** (Israeli company, Petah Tikva!) — STRONGEST alternative. Used by Fiverr, Upwork, Amazon. Mass Payout API, $1.50/payout, 1-3 day approval. If PayPal Payouts denied, pivot to Payoneer.
-- **Wise Business** — Works from Israel, 0.4-1.5% fees, API for batch payments. Good for payouts only.
-- **Paddle** — Merchant of Record, handles all tax/compliance, 5%+$0.50. Good for selling Nectar credits.
-- **Tipalti** — Israeli company, enterprise-level ($299+/mo), good at scale.
-- REJECTED: Stripe (needs US LLC), Deel (HR not marketplace), crypto (too niche)
-
-**Future (not Phase 7):**
+**Future:**
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
 - GUI development: Native graphical interface for HoneycombOfAI
 
-### Chapter 8 Notes — "The Business Engine" (collecting ideas)
+### Payment Research Archive (2026-03-23)
 
-This chapter will cover the full business/economic model in depth. Collecting notes here as we design and build.
+All providers researched, with Israel-specific findings:
+- PayPal: Cannot fund from Israeli bank, $750/day withdrawal limit, enterprise features unavailable
+- Payoneer: Frozen funds horror stories, account closures without warning
+- Stripe: Needs US LLC, IRS obligations
+- Tipalti: $299+/mo, enterprise only
+- Wise: Good for payouts only, no marketplace features
+- Paddle: Merchant of Record, 5%+$0.50, good for credit sales but not marketplace payouts
+- Israeli gateways (Tranzila, CardCom, Meshulam): Collection only, no payout capabilities
 
-- **The micro-transaction problem:** Why per-question billing fails with payment processor fees (the 33% fee trap)
-- **Nectar Credits system:** The bus ticket analogy — buy in bulk, use one at a time, get a discount for bigger packages
-- **Honey Drop / Jar / Pot:** Tiered pricing with volume discounts (10% / 20% / 25% off)
-- **Honeycomb Balance & Honey Harvest:** How workers/queens accumulate earnings and get paid in batches, not per-answer
-- **The math that makes everyone profitable:** Fee analysis showing how bundling drops PayPal's cut from 33% to ~3%
-- **PayPal from Israel — the real story:** Israel is "Fully Localized" for PayPal Merchant mode, but cannot fund PayPal from Israeli bank (balance comes from received payments only). $750/day withdrawal limit via Visa card. No hidden IRS trap (unlike Stripe). Total marketplace cycle fees: 5-9%.
-- **PayPal Commerce Platform vs Merchant mode:** Why we use Merchant mode (Commerce Platform doesn't support Israel). Orders API v2 for money-in, Standard Payouts API for money-out. Our code handles the marketplace splitting logic internally.
-- **SMS notifications (Twilio):** How the hive keeps everyone informed — buzz alerts when jobs arrive, complete, etc. (add details after Phase 7C)
-- *(add more ideas here as they come up)*
+Total marketplace fees for someone who CAN run payments: ~5-9% (receive + payout + currency conversion)
 
-### PayPal Israel Limitations (documented 2026-03-23)
-- Cannot fund PayPal from Israeli bank — balance ONLY from received payments
-- $750/day withdrawal limit via Israeli Visa card (workaround: US bank account, $35/withdrawal)
-- Cannot use Israeli credit card to send money — only PayPal balance
-- Most enterprise features NOT available for Israeli accounts
-- Fees: 3.4%+1.20ILS (receive) + 2% capped (payout) + 2.5% (currency conversion)
-- Tax: Report to Israeli Tax Authority + Bituach Leumi + VAT (17%). Need Israeli accountant.
-- NO US entity required, NO IRS 1099 risk to us (unlike Stripe)
+### Chapter 8 — "The Business Engine — Money, Honey, and the Invisible Walls" ✅
+Written 2026-03-23. Covers: micro-transaction problem, Nectar Credits solution, PayPal's invisible walls (country, approval, funding, withdrawal), the Platform vs Project fork.
