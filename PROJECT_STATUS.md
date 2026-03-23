@@ -108,8 +108,8 @@ Selling one question at $1 loses 33% to fees. Solution: **sell in bundles, pay o
 ### What's Next — Phase 7 (starting 2026-03-23)
 
 **Part 7A: Payments**
-- Layer 1: Internal earnings engine — Nectar credits, Honeycomb Balance tracking, revenue split (5% Hub / 30% Queen / 70% Workers of remainder)
-- Layer 2: PayPal Commerce Platform — Honey Drop/Jar/Pot purchase pages, Honey Harvest payout system
+- Layer 1: Internal earnings engine ✅ DONE (2026-03-23) — Nectar credits, Honeycomb Balance, revenue split, buy/harvest pages, navbar balances, tested live on beehiveofai.com
+- Layer 2: PayPal Commerce Platform — Honey Drop/Jar/Pot real purchases, Honey Harvest real payouts (next)
 - Payment provider decision: PayPal ONLY. No Stripe, no US LLC, no Rapyd.
 
 **Part 7B: Ratings improvements**
