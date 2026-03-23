@@ -98,14 +98,31 @@ We DON'T claim plug-and-play payments for every country. Instead:
 ### DB Migration Required
 Deleted and reseeded DB after 7B (new `subtask_id` column on ratings table).
 
+## IMPORTANT: PHASE 7C DIRECTION CHANGE (late night 2026-03-23)
+
+**SMS notifications were built then deliberately REMOVED.** Here's what happened:
+
+1. Sonnet built SMS notifications (job submitted → SMS to Queen, etc.) — worked perfectly in test mode
+2. Nir realized: "Wait, the important thing isn't notifications — it's VERIFICATION (anti-bot, anti-sybil)"
+3. Opus agreed — notifications are nice-to-have, verification is essential security
+4. ALL notification code was removed (sms_service.py deleted, all SMS calls removed from app.py, dashboard banner removed, seed phone numbers removed)
+5. Twilio's basic Messages API needs A2P 10DLC registration (US only, takes a week) — doesn't work for Nir in Israel
+6. Solution: **Twilio Verify API** — completely different product, no phone number purchase needed, no A2P registration, works from any country
+7. Nir created a Twilio account + Verify Service named "BeehiveOfAI" — credentials ready
+
+**New Phase 7C = SMS Phone Verification:**
+- Register → enter phone number (required) → receive 6-digit code → type it in → verified
+- Uses Twilio Verify API (not Messages API) — Twilio generates/sends/checks codes
+- Unverified users can't submit jobs, join hives, create hives, or request payouts
+- Reuses existing `is_verified` field and "✅ Verified" profile badge
+- Plan in `PHASE7C_SMS_VERIFICATION_PLAN.md`
+
 ## WHAT'S NEXT (Priority Order)
 
-1. Phase 7C: SMS notifications (Twilio) — plan ready in `PHASE7C_SMS_PLAN.md`
-4. Deployment guide (DEPLOY.md) — how deployers set up their own instance
-5. Payment guide (PAYMENT_GUIDE.md) — by country, with Claude Code prompts
-6. Multi-backend support (LM Studio, llama.cpp, vLLM)
-7. Native GUI for HoneycombOfAI
-8. Book rewrite (when coding is more stable)
+1. Phase 7C: SMS phone VERIFICATION — plan ready in `PHASE7C_SMS_VERIFICATION_PLAN.md`
+2. Multi-backend support (LM Studio, llama.cpp, vLLM)
+3. Native GUI for HoneycombOfAI
+4. Book rewrite (when coding is more stable)
 
 ---
 
@@ -117,4 +134,5 @@ Deleted and reseeded DB after 7B (new `subtask_id` column on ratings table).
 4. The project is positioned as free/open-source, not as Nir's personal business
 5. Keep the dramatic pitch: "Turn many weak AIs into one powerful AI"
 6. Equal weight on individuals AND companies — not marketplace-first
+7. **SMS means VERIFICATION, not notifications** — the old notification code was removed on purpose
 7. Book rewrite is deferred — focus on code and documentation first

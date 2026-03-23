@@ -161,10 +161,15 @@ Payment chapter becomes a guide: "if YOU are in the US, use Stripe Connect. If Y
 - New routes: `/subtask/<id>/rate-worker`, `/job/<id>/rate-queen`
 - New templates: `rate_worker.html`, `rate_queen.html`
 
-**Part 7C: SMS notifications — NEXT**
-- Twilio integration for job submitted / completed / worker joined / harvest notifications
-- Two-mode: real Twilio if env vars set, console log if not
-- Plan ready in `PHASE7C_SMS_PLAN.md`
+**Part 7C: SMS Phone Verification — NEXT**
+- CHANGED DIRECTION: SMS is for VERIFICATION (anti-bot/sybil), not notifications
+- SMS notifications were built then deliberately removed — wrong priority, dead code
+- Now using Twilio Verify API (not Messages API) — no phone number purchase or A2P 10DLC needed
+- Nir has Twilio account + Verify Service set up, credentials ready
+- Plan ready in `PHASE7C_SMS_VERIFICATION_PLAN.md`
+- Flow: Register → enter phone → receive 6-digit code via SMS → type code → verified
+- Unverified users blocked from submitting jobs, joining hives, creating hives, requesting payouts
+- Reuses existing `is_verified` field on User model + "✅ Verified" badge on profiles
 
 **Deployer Documentation ✅ DONE (2026-03-23)**
 - `DEPLOY.md` — Three hosting options (free/cheap/PaaS), step-by-step ✅
