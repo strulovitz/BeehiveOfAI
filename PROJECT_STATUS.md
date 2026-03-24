@@ -176,6 +176,9 @@ Payment chapter becomes a guide: "if YOU are in the US, use Stripe Connect. If Y
 - `PAYMENT_GUIDE.md` — Provider by country, vibe coding approach ✅
 - `README.md` — Complete rewrite with "YOU" framing ✅
 
+**Known Platform Findings (2026-03-24):**
+- **LM Studio on Linux requires manual server start.** On Windows, LM Studio auto-serves its API on port 1234 when a model is loaded. On Linux, the user must go to the Developer/Local Server tab and click "Start Server" manually. Without this, HoneycombOfAI's backend detector will show LM Studio as "not detected." The detection code is correct and platform-agnostic — this is a LM Studio behavior difference. Documented in: Chapter 7 of the book, HoneycombOfAI README, HoneycombOfAI PLATFORM_NOTES.md.
+
 **Future:**
 - Multi-backend support: Add LM Studio, llama.cpp, vLLM backends to HoneycombOfAI
 - GUI development: Native graphical interface for HoneycombOfAI
