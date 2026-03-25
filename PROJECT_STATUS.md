@@ -290,7 +290,31 @@ The HoneycombOfAI desktop client now has a full native GUI built with PyQt6. All
 - Test GUI on Linux (Debian 13 + Linux Mint 22.2) — should work identically
 - GUI polish: icons, notifications, tray icon, auto-start
 - Installers: Windows (.exe), Linux (.deb), macOS (.app)
-- Chapter 9 of the book: documenting the GUI development
+
+**Phase 10: COMPLETE BOOK REWRITE — IN PROGRESS (2026-03-25 night)**
+
+The book (TheDistributedAIRevolution) has been completely rewritten from scratch by Desktop Windows Claude Code (Opus 4.6). The old 8 chapters were deleted. The new book has a completely different vision:
+
+- **New vision:** Written for EVERYONE, not just developers. Non-technical, conversational, enthusiastic. "For Dummies" style — any term a layperson wouldn't know gets explained simply.
+- **Two modes emphasized from Chapter 1:** Public mode (open marketplace, home computers earn money) AND Private mode (organizations use their own idle computers, sensitive data never leaves the building).
+- **New structure:** Prologue + 10 chapters + Epilogue (was: 8 chapters, no prologue/epilogue)
+- **Key themes:** Task parallelism as a NEW INVENTION (not the failed model-splitting approach), the chess analogy, Pirate Bay reputation system / Privateer metaphor, Queen Bee as powerful AI brain (not just coordinator), vibe coding, open source as gift to the world
+
+**Published (on GitHub):**
+- Prologue — A Dream Worth Coding For (personal story, girlfriend's dreams, motivation)
+- Chapter 1 — What If Your Computers Could Make Money While Everyone Sleeps?
+- Chapter 2 — The Beehive: A Simple Idea That Changes Everything
+- Chapter 3 — The Secret Ingredient: AI That Lives on Your Computer (DeepSeek R1, MoE, chain of thought, NOT an agent)
+- Chapter 4 — One App, Three Dreams (Queen tiers: dual-GPU / DGX Spark / VPS, reputation system)
+- Chapter 5 — The Marketplace: Where Tasks Meet Computers
+
+**Remaining (to be written next session):**
+- Chapter 6 — Show Me the Honey: How Everyone Earns
+- Chapter 7 — From Zero to Beehive: Anyone Can Set This Up
+- Chapter 8 — The Proof: We Actually Did It
+- Chapter 9 — Vibe Coding: How One Person Built All of This
+- Chapter 10 — The Future: A World of Beehives
+- Epilogue — Tokyo, Paris, and the Open Road
 
 ### Payment Research Archive (2026-03-23)
 
