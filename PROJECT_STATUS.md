@@ -238,7 +238,8 @@ The most complete test of the entire platform to date:
 - Worker: `source ~/honeycomb-venv/bin/activate && cd ~/HoneycombOfAI && python honeycomb.py`
 - Twilio env vars needed: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID (stored in ~/BeehiveOfAI/.env, NOT committed to git)
 
-**Known Platform Findings (2026-03-24):**
+**Known Platform Findings (2026-03-25):**
+- **Linux GUI requires `libxcb-cursor0` system package.** PyQt6 will crash on startup without it. Fix: `sudo apt install -y libxcb-cursor0`. Applies to all Debian-based distros (Debian, Ubuntu, Linux Mint). Discovered on Desktop Linux Mint 22.2, 2026-03-25.
 - **LM Studio on Linux requires manual server start.** On Windows, LM Studio auto-serves its API on port 1234 when a model is loaded. On Linux, the user must go to the Developer/Local Server tab and click "Start Server" manually. Without this, HoneycombOfAI's backend detector will show LM Studio as "not detected." The detection code is correct and platform-agnostic — this is a LM Studio behavior difference. Documented in: Chapter 7 of the book, HoneycombOfAI README, HoneycombOfAI PLATFORM_NOTES.md.
 
 **Phase 6 Backend Status (updated 2026-03-24 night):**
