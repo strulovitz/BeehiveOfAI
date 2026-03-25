@@ -1031,6 +1031,73 @@ def api_complete_job(job_id):
     })
 
 
+@app.route('/api/hive/<int:hive_id>/jobs', methods=['POST'])
+@csrf.exempt
+@api_auth_required
+def api_submit_job(hive_id):
+    """API endpoint for Beekeeper to submit a job (used by HoneycombOfAI GUI)."""
+    hive = db.session.get(Hive, hive_id)
+    if not hive:
+        return jsonify({"error": "Hive not found"}), 404
+    user = request.api_user
+    if user.role != 'beekeeper':
+        return jsonify({"error": "Only beekeepers can submit jobs"}), 403
+    data = request.get_json() or {}
+    nectar = data.get('nectar', '').strip()
+    if not nectar or len(nectar) < 10:
+        return jsonify({"error": "Task text (nectar) is too short — minimum 10 characters"}), 400
+    if user.nectar_balance < 1:
+        return jsonify({"error": "Not enough Nectars. Please buy a Nectar package on the website first."}), 402
+    job = Job(
+        hive_id=hive_id,
+        beekeeper_id=user.id,
+        nectar=nectar,
+        price=hive.price_per_job,
+        status='pending',
+    )
+    db.session.add(job)
+    user.nectar_balance -= 1
+    nectar_tx = NectarTransaction(
+        user_id=user.id,
+        amount=-1,
+        balance_after=user.nectar_balance,
+        transaction_type='spend',
+        description=f'Submitted job to {hive.name} (via API)',
+    )
+    db.session.add(nectar_tx)
+    user.total_jobs += 1
+    db.session.flush()
+    nectar_tx.job_id = job.id
+    db.session.commit()
+    return jsonify({
+        "id": job.id,
+        "hive_id": hive_id,
+        "status": "pending",
+        "nectar_balance": user.nectar_balance,
+    }), 201
+
+
+@app.route('/api/job/<int:job_id>')
+@csrf.exempt
+@api_auth_required
+def api_get_job(job_id):
+    """API endpoint to get job status (used by HoneycombOfAI GUI for polling)."""
+    job = db.session.get(Job, job_id)
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+    result = {
+        "id": job.id,
+        "hive_id": job.hive_id,
+        "status": job.status,
+        "nectar": job.nectar,
+        "honey": job.honey or "",
+        "price": job.price,
+        "created_at": job.created_at.isoformat() if job.created_at else None,
+        "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+    }
+    return jsonify(result)
+
+
 # ── Startup ────────────────────────────────────────────────────────────────────
 
 with app.app_context():

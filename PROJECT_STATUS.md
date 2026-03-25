@@ -252,10 +252,44 @@ The most complete test of the entire platform to date:
 - All 5 backends PASS on Laptop Debian 13 (Ollama, LM Studio, llama.cpp server, llama.cpp Python, vLLM)
 - Desktop Linux Mint: Ollama PASS (others available to set up as needed)
 
+**Phase 9: PyQt6 Native Desktop GUI for HoneycombOfAI — DONE (2026-03-25 evening)**
+
+The HoneycombOfAI desktop client now has a full native GUI built with PyQt6. All three roles tested and working on Desktop Windows 11.
+
+- **GUI Files Created:**
+  - `gui_main.py` — Main window, mode selector (card-based first screen), app entry point
+  - `gui_worker.py` — Worker Bee dashboard: status indicator, stat cards (tasks, chars, uptime), activity log
+  - `gui_queen.py` — Queen Bee console: job board table with progress bars, subtask tracking, activity log
+  - `gui_beekeeper.py` — Beekeeper portal: task text area, submit button, live status polling, results display, star rating
+  - `gui_settings.py` — Settings dialog: 4 tabs (General, AI Model, Authentication, Backends), backend auto-detection, connection test, saves to config.yaml
+  - `gui_threads.py` — QThread wrappers for Worker/Queen polling loops (thread-safe GUI updates via signals/slots)
+  - `gui_styles.py` — Bee-themed dark/amber stylesheet (honey gold accents, dark background)
+
+- **API Endpoints Added to BeehiveOfAI:**
+  - `POST /api/hive/<hive_id>/jobs` — Job submission API (for Beekeeper GUI)
+  - `GET /api/job/<job_id>` — Job status polling API (for Beekeeper GUI)
+
+- **Key Design Decisions:**
+  - Config.yaml remains the single source of truth (GUI reads/writes it via Settings dialog)
+  - All polling runs in QThreads, GUI updates via Qt signals/slots (thread-safe)
+  - User-friendly error messages for all connection/auth failures (not raw exceptions)
+  - All errors logged to `honeycomb_gui.log` (user can't copy-paste from Windows dialog boxes)
+  - Cross-platform: same code runs on Windows, Debian, Linux Mint (PyQt6 is fully cross-platform)
+  - Terminal CLI (`python honeycomb.py`) continues to work alongside the GUI
+
+- **Test Results (Desktop Windows 11, 2026-03-25 evening):**
+  - Beekeeper: Submit task, receive Honey result, rate job — PASS
+  - Worker Bee: Start worker, process subtasks with live dashboard — PASS
+  - Queen Bee: Start queen, split tasks, track subtask progress, combine results — PASS
+
+- **How to Launch:** `python gui_main.py`
+- **How to Launch on Linux:** `source ~/honeycomb-venv/bin/activate && pip install PyQt6 && cd ~/HoneycombOfAI && python gui_main.py`
+
 **Future:**
-- Cloudflare Tunnel on Linux Mint: Serve website to internet from Desktop Linux
-- Real Twilio SMS: Full phone verification with real SMS delivery
-- GUI development: Native graphical interface for HoneycombOfAI
+- Test GUI on Linux (Debian 13 + Linux Mint 22.2) — should work identically
+- GUI polish: icons, notifications, tray icon, auto-start
+- Installers: Windows (.exe), Linux (.deb), macOS (.app)
+- Chapter 9 of the book: documenting the GUI development
 
 ### Payment Research Archive (2026-03-23)
 
