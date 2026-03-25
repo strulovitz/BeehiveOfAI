@@ -3,9 +3,9 @@
 > This file is shared between Desktop and Laptop Claude Code instances via GitHub.
 > Update it whenever significant progress is made.
 
-## Last Updated: 2026-03-23 (late evening)
+## Last Updated: 2026-03-25
 
-## Current Phase: Phase 7 — Next Steps (Phase 6 COMPLETE ✅)
+## Current Phase: Phase 8 — Internet Testing & Production Linux (Phase 6 COMPLETE ✅, Linux Test COMPLETE ✅)
 
 ### Network Info
 - **Desktop IP (LAN):** 10.0.0.4
@@ -176,6 +176,31 @@ Payment chapter becomes a guide: "if YOU are in the US, use Stripe Connect. If Y
 - `PAYMENT_GUIDE.md` — Provider by country, vibe coding approach ✅
 - `README.md` — Complete rewrite with "YOU" framing ✅
 
+**Phase 8: Desktop Linux Mint Setup + Linux Cross-Machine Test ✅ DONE (2026-03-25)**
+
+The Desktop computer was set up on Linux Mint 22.2 (Cinnamon) and a full cross-machine test was run between the two Linux machines:
+
+- Desktop Linux Mint 22.2 Setup:
+  - GitHub CLI (gh) installed and authenticated as strulovitz
+  - Python 3.12.3 with venv at ~/beehive-venv (BeehiveOfAI) and ~/honeycomb-venv (HoneycombOfAI)
+  - Ollama installed with llama3.2:3b model (RTX 4070 Ti GPU, Driver 580, CUDA 13.0)
+  - All dependencies installed for both BeehiveOfAI and HoneycombOfAI
+  - cmake and build-essential available for future builds
+
+- **LINUX CROSS-MACHINE TEST PASSED on 2026-03-25** 🎉🎉🎉
+  - Desktop (Linux Mint 22.2, RTX 4070 Ti): Website + Worker Bee (Ollama, llama3.2:3b)
+  - Laptop (Debian 13, RTX 5090): Queen Bee (Ollama, llama3.2:3b)
+  - Beekeeper submitted job via website → Queen claimed → Queen split into subtasks via AI → Worker processed 2 subtasks (environmental impact + economic feasibility of geothermal energy) → Queen combined → Honey delivered
+  - Total pipeline time: ~1 minute (14:11:40 submit → 14:12:44 complete)
+  - Worker output: subtask #7 (2647 chars), subtask #8 (3639 chars)
+  - Desktop IP: 10.0.0.4, Laptop IP: 10.0.0.7
+  - Beekeeper rated the completed job ✅
+  - This is the first successful Linux-to-Linux distributed AI test! 🐧🐧
+
+- Machine Roles for Linux Test:
+  - **Desktop (10.0.0.4, Linux Mint):** `python app.py` (website) + `python honeycomb.py` (Worker, Ollama)
+  - **Laptop (10.0.0.7, Debian 13):** `python honeycomb.py --mode queen` (Queen, Ollama)
+
 **Known Platform Findings (2026-03-24):**
 - **LM Studio on Linux requires manual server start.** On Windows, LM Studio auto-serves its API on port 1234 when a model is loaded. On Linux, the user must go to the Developer/Local Server tab and click "Start Server" manually. Without this, HoneycombOfAI's backend detector will show LM Studio as "not detected." The detection code is correct and platform-agnostic — this is a LM Studio behavior difference. Documented in: Chapter 7 of the book, HoneycombOfAI README, HoneycombOfAI PLATFORM_NOTES.md.
 
@@ -186,8 +211,13 @@ Payment chapter becomes a guide: "if YOU are in the US, use Stripe Connect. If Y
 - llama.cpp Python: PASS (Windows, CPU-only)
 - vLLM: **NOT DONE — next task.** Install inside ~/honeycomb-venv on Debian. RTX 5090 Blackwell CUDA compatibility must be verified carefully.
 
+**Phase 6 Backend Status (updated 2026-03-25):**
+- All 5 backends PASS on Laptop Debian 13 (Ollama, LM Studio, llama.cpp server, llama.cpp Python, vLLM)
+- Desktop Linux Mint: Ollama PASS (others available to set up as needed)
+
 **Future:**
-- vLLM backend: Install and test on Debian 13 (the LAST remaining Phase 6 task)
+- Cloudflare Tunnel on Linux Mint: Serve website to internet from Desktop Linux
+- Real Twilio SMS: Full phone verification with real SMS delivery
 - GUI development: Native graphical interface for HoneycombOfAI
 
 ### Payment Research Archive (2026-03-23)
