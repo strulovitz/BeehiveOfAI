@@ -3,9 +3,9 @@
 > This file is shared between Desktop and Laptop Claude Code instances via GitHub.
 > Update it whenever significant progress is made.
 
-## Last Updated: 2026-03-25
+## Last Updated: 2026-03-25 (evening)
 
-## Current Phase: Phase 8 — Internet Testing & Production Linux (Phase 6 COMPLETE ✅, Linux Test COMPLETE ✅)
+## Current Phase: Phase 8 — INTERNET TEST COMPLETE ✅ (Phase 6 ✅, Linux LAN Test ✅, Internet Test ✅)
 
 ### Network Info
 - **Desktop IP (LAN):** 10.0.0.4
@@ -200,6 +200,43 @@ The Desktop computer was set up on Linux Mint 22.2 (Cinnamon) and a full cross-m
 - Machine Roles for Linux Test:
   - **Desktop (10.0.0.4, Linux Mint):** `python app.py` (website) + `python honeycomb.py` (Worker, Ollama)
   - **Laptop (10.0.0.7, Debian 13):** `python honeycomb.py --mode queen` (Queen, Ollama)
+
+**Phase 8B: FULL INTERNET TEST PASSED on 2026-03-25 ✅ 🎉🎉🎉**
+
+The most complete test of the entire platform to date:
+
+- **Website served to the REAL INTERNET** via Cloudflare Tunnel from Desktop Linux Mint 22.2
+  - New tunnel created: `beehive-linux` (ID: 96467138-c2c4-4caa-9885-bc976b48a97c)
+  - DNS updated: beehiveofai.com now routes to the Linux Mint tunnel
+  - Config at: `/home/nir/.cloudflared/config.yml`
+  - 4 tunnel connections established (Tel Aviv tlv01 + Frankfurt fra06/fra20)
+
+- **Real SMS phone verification via Twilio** ✅
+  - Twilio credentials configured as environment variables on Desktop Linux Mint
+  - Nir received real SMS on his phone (+972544752626)
+  - Verified successfully, then submitted a job
+
+- **Full Internet Pipeline Test** — Job #4 "AI in Space" (2026-03-25 14:50):
+  - Beekeeper submitted job via https://beehiveofai.com (real internet, through Cloudflare)
+  - Queen (Laptop Debian 13, 10.0.0.7) claimed job via internet → split into 2 subtasks using AI
+  - Worker (Desktop Linux Mint, 10.0.0.4) claimed & processed subtask #9 and #10 using Ollama (RTX 4070 Ti)
+  - Queen combined results → JOB COMPLETE
+  - Total pipeline time: ~27 seconds (14:50:21 submit → 14:50:50 complete)
+  - Beekeeper rated the job ✅
+
+- **Everything verified end-to-end:**
+  - [x] Real internet access via Cloudflare Tunnel
+  - [x] Real SMS verification via Twilio Verify API
+  - [x] Queen connecting via beehiveofai.com (not LAN IP)
+  - [x] Worker processing subtasks with local AI (Ollama, RTX 4070 Ti)
+  - [x] Revenue split and job completion
+  - [x] Job rating by Beekeeper
+
+### Production Setup (Desktop Linux Mint — CURRENT)
+- Website: `source ~/beehive-venv/bin/activate && cd ~/BeehiveOfAI && python app.py` (needs Twilio env vars)
+- Tunnel: `cloudflared tunnel run beehive-linux`
+- Worker: `source ~/honeycomb-venv/bin/activate && cd ~/HoneycombOfAI && python honeycomb.py`
+- Twilio env vars needed: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID (stored in ~/BeehiveOfAI/.env, NOT committed to git)
 
 **Known Platform Findings (2026-03-24):**
 - **LM Studio on Linux requires manual server start.** On Windows, LM Studio auto-serves its API on port 1234 when a model is loaded. On Linux, the user must go to the Developer/Local Server tab and click "Start Server" manually. Without this, HoneycombOfAI's backend detector will show LM Studio as "not detected." The detection code is correct and platform-agnostic — this is a LM Studio behavior difference. Documented in: Chapter 7 of the book, HoneycombOfAI README, HoneycombOfAI PLATFORM_NOTES.md.
