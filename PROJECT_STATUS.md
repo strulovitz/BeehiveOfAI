@@ -307,10 +307,10 @@ The book (TheDistributedAIRevolution) has been completely rewritten from scratch
 - Chapter 3 — The Secret Ingredient: AI That Lives on Your Computer (DeepSeek R1, MoE, chain of thought, NOT an agent)
 - Chapter 4 — One App, Three Dreams (Queen tiers: dual-GPU / DGX Spark / VPS, reputation system)
 - Chapter 5 — The Marketplace: Where Tasks Meet Computers
+- Chapter 6 — Show Me the Honey: How Everyone Earns (Nectar credits, 65/30/5 split, escrow, flywheel)
+- Chapter 7 — From Zero to Beehive: Anyone Can Set This Up (step-by-step setup for all 3 roles, public + private)
 
 **Remaining (to be written next session):**
-- Chapter 6 — Show Me the Honey: How Everyone Earns
-- Chapter 7 — From Zero to Beehive: Anyone Can Set This Up
 - Chapter 8 — The Proof: We Actually Did It
 - Chapter 9 — Vibe Coding: How One Person Built All of This
 - Chapter 10 — The Future: A World of Beehives
