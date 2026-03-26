@@ -3,7 +3,7 @@
 > This file is shared between Desktop and Laptop Claude Code instances via GitHub.
 > Update it whenever significant progress is made.
 
-## Last Updated: 2026-03-25 (evening)
+## Last Updated: 2026-03-26 (evening)
 
 ## Current Phase: Phase 8 — INTERNET TEST COMPLETE ✅ (Phase 6 ✅, Linux LAN Test ✅, Internet Test ✅)
 
@@ -290,6 +290,43 @@ The HoneycombOfAI desktop client now has a full native GUI built with PyQt6. All
 - Test GUI on Linux (Debian 13 + Linux Mint 22.2) — should work identically
 - GUI polish: icons, notifications, tray icon, auto-start
 - Installers: Windows (.exe), Linux (.deb), macOS (.app)
+
+**Phase 11: macOS VM Setup + Distributed Test Attempt (2026-03-26)**
+
+Both macOS Sequoia VMs (VMware guests, CPU-only, no GPU) were fully set up and configured:
+
+- **Desktop macOS VM (10.0.0.7):**
+  - Homebrew 5.1.1, Python 3.12.13, Git 2.39.5, GitHub CLI 2.89.0 (authenticated)
+  - Both repos cloned, venvs created, all dependencies installed (including PyQt6 6.9.0)
+  - Ollama working with llama3.2:3b (CPU-only, ~12s per response)
+  - PyQt6 GUI tested and working
+  - CLI tested and working
+  - Configured as Queen Bee
+
+- **Laptop macOS VM (10.0.0.9):**
+  - Python 3.9.6 (pre-installed), Git 2.39.5
+  - All three repos cloned, venvs created, all dependencies installed
+  - Ollama working with llama3.2:3b (CPU-only, ~9s per response)
+  - PyQt6 GUI tested and working
+  - CLI tested and working
+  - Configured as Worker Bee (worker-laptop-macos-009)
+
+- **macOS Distributed Test — NOT YET COMPLETED:**
+  - Queen on Desktop Mac connected to beehiveofai.com, saw 2 workers
+  - Worker on Laptop Mac reported connected and polling
+  - Job #6 submitted — Queen split into 2 subtasks, but Worker never claimed them → timed out (5min)
+  - Job #7 submitted (simpler) — same issue: subtasks created but Worker never claimed
+  - Root cause: Laptop Worker process likely died after initial startup (session ended or SSL issue)
+  - **TO RETRY TOMORROW** with both terminals open and monitored simultaneously
+  - See BRIEFING_MACOS_DISTRIBUTED_TEST_STATUS.md in HoneycombOfAI for full details
+
+- **macOS Platform Findings:**
+  - PyQt6 installs cleanly via pip on macOS Sequoia — no `brew install qt@6` needed
+  - Ollama CPU-only is slow but fully functional (~9-12 seconds per simple query)
+  - macOS Sequoia has Python 3.9.6 at /usr/bin/python3 (after Xcode CLT installed)
+  - Homebrew installs to /usr/local on Intel Macs (VMware x86_64)
+  - urllib3/LibreSSL warning in stderr is harmless
+  - Copy-paste in VMware macOS is difficult — use GitHub to share files between instances
 
 **Phase 10: COMPLETE BOOK REWRITE — IN PROGRESS (2026-03-25 night)**
 
