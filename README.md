@@ -4,6 +4,18 @@
 
 ---
 
+### Watch the Explainer Videos
+
+**Private Mode — For Organizations** (your data never leaves the building)
+
+[![Private Mode Video](https://img.youtube.com/vi/o8R58VuJFx8/maxresdefault.jpg)](https://www.youtube.com/watch?v=o8R58VuJFx8)
+
+**Public Mode — For Everyone** (your idle computer earns money while you sleep)
+
+[![Public Mode Video](https://img.youtube.com/vi/PTnAqZCAClw/maxresdefault.jpg)](https://www.youtube.com/watch?v=PTnAqZCAClw)
+
+---
+
 Your computer sits idle most of the day. So does your neighbor's. So does every computer in every office after 6 PM.
 
 What if all those idle computers could work together — like bees in a hive — to deliver AI services as powerful as the ones that cost thousands per month from OpenAI or Google?
