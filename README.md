@@ -89,11 +89,28 @@ BeehiveOfAI splits the *work* instead:
 
 ---
 
-## Deploy Your Own BeehiveOfAI
+## Get Started in 17 Minutes
 
-This is a complete, working platform. You can deploy your own instance in about 15 minutes.
+No cloud account. No API keys. No credit card. Just your computer.
 
-### Quick Start (Test Mode — No Payments, Free to Try)
+| Step | What You Do | Time |
+|------|------------|------|
+| 1 | Install Ollama (free local AI runtime) | 5 min |
+| 2 | Download a model (e.g. `ollama pull llama3.2`) | 5 min |
+| 3 | Clone this repo, install, and run | 5 min |
+| 4 | Open your browser and start using it | 2 min |
+
+### Step 1 — Install Ollama
+
+Go to [ollama.com](https://ollama.com), download, install. One click.
+
+### Step 2 — Download a Model
+
+```bash
+ollama pull llama3.2
+```
+
+### Step 3 — Clone and Run BeehiveOfAI
 
 ```bash
 git clone https://github.com/strulovitz/BeehiveOfAI.git
@@ -103,7 +120,9 @@ python seed_data.py    # creates database with sample data
 python app.py          # starts the website
 ```
 
-Open http://localhost:5000 in your browser.
+### Step 4 — Open Your Browser
+
+Go to http://localhost:5000
 
 **Test accounts (password: `test123` for all):**
 
@@ -114,6 +133,8 @@ Open http://localhost:5000 in your browser.
 | Beekeeper | company1@test.com |
 
 Everything works out of the box — submitting tasks, splitting work, combining results, earning credits. No payment provider needed. This is test mode: all purchases are free, so you can explore the entire system.
+
+**That's it. Seventeen minutes. Your computer is now part of a distributed AI system.**
 
 ### Going Live — Your Domain, Your Payment Provider
 
