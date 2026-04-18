@@ -13,7 +13,9 @@ from functools import wraps
 import paypal_service
 import sms_service
 from models import db, User, Hive, HiveMember, Job, SubTask, Rating, NectarTransaction, EarningsTransaction, PayPalOrder
-from forms import RegisterForm, LoginForm, CreateHiveForm, SubmitJobForm, RatingForm, VerifyPhoneForm, UpdatePhoneForm
+from forms import RegisterForm, LoginForm, CreateHiveForm, SubmitJobForm, SubmitMultimediaForm, RatingForm, VerifyPhoneForm, UpdatePhoneForm
+from werkzeug.utils import secure_filename
+import uuid
 
 # ── Nectar Credit Packages ────────────────────────────────────────────────────
 NECTAR_PACKAGES = {
@@ -37,6 +39,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('BEEHIVE_SECRET_KEY', 'dev-only-secret-key-not-for-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///beehive.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Multimedia uploads (JPEG/MP3/MP4) live here; Workers fetch via /uploads/<filename>
+app.config['UPLOADS_DIR'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200 MB cap
+os.makedirs(app.config['UPLOADS_DIR'], exist_ok=True)
 
 db.init_app(app)
 csrf = CSRFProtect(app)
@@ -382,6 +388,79 @@ def submit_job(hive_id):
         flash('Your task has been submitted! 1 Nectar spent.', 'success')
         return redirect(url_for('job_status', job_id=job.id))
     return render_template('submit_job.html', hive=hive, form=form)
+
+
+@app.route('/hive/<int:hive_id>/submit-multimedia', methods=['GET', 'POST'])
+@login_required
+@role_required('beekeeper')
+def submit_multimedia(hive_id):
+    """Upload a JPEG/MP3/MP4 and create a multimedia Job for a Hive.
+
+    Architecture: the file is stored in uploads/ on this server. A Subtask is
+    created with text 'MULTIMEDIA:<type>:<url>' where <url> points at
+    /uploads/<filename>. Worker Bees polling the hive fetch that file over HTTP
+    and run the recursive sub-sampling pipeline locally (photo/sound/video).
+    Result text flows back via the existing submit_subtask_result API.
+    """
+    if not current_user.is_verified:
+        flash('Please verify your phone number first.', 'warning')
+        return redirect(url_for('verify_phone', user_id=current_user.id))
+    hive = db.session.get(Hive, hive_id) or abort(404)
+    form = SubmitMultimediaForm()
+    if form.validate_on_submit():
+        if current_user.nectar_balance < 1:
+            flash('You need at least 1 Nectar to submit a job. Please buy a Nectar package first!', 'warning')
+            return redirect(url_for('buy_nectars'))
+
+        media_type = form.media_type.data
+        uploaded = form.media_file.data
+        original = secure_filename(uploaded.filename)
+        ext = os.path.splitext(original)[1].lower() or {'photo': '.jpg', 'sound': '.mp3', 'video': '.mp4'}[media_type]
+        stored = f"{uuid.uuid4().hex}{ext}"
+        save_path = os.path.join(app.config['UPLOADS_DIR'], stored)
+        uploaded.save(save_path)
+
+        file_url = url_for('serve_upload', filename=stored, _external=True)
+
+        job = Job(
+            hive_id=hive_id,
+            beekeeper_id=current_user.id,
+            nectar=f'[multimedia:{media_type}] original={original} url={file_url}',
+            price=hive.price_per_job,
+            status='pending',
+        )
+        db.session.add(job)
+        current_user.nectar_balance -= 1
+        nectar_tx = NectarTransaction(
+            user_id=current_user.id,
+            amount=-1,
+            balance_after=current_user.nectar_balance,
+            transaction_type='spend',
+            description=f'Submitted multimedia ({media_type}) to {hive.name}',
+        )
+        db.session.add(nectar_tx)
+        current_user.total_jobs += 1
+        db.session.flush()
+        nectar_tx.job_id = job.id
+        db.session.commit()
+        # NOTE: NO subtask is created here. The Hive's Queen Bee polls for
+        # pending Jobs, sees the '[multimedia:<type>] ... url=<url>' marker in
+        # Job.nectar, fetches the file, and splits it into N tile subtasks
+        # (MULTIMEDIA_TILE:<type>:<label>:<url>:<params>). Workers each process
+        # ONE tile. Queen integrates when all tile subtasks complete.
+        # This preserves Book 1 Ch 12 architecture (per Rule 1 of CLAUDE.md).
+        flash(f'Multimedia task submitted! The Queen will split your {media_type} for Workers.', 'success')
+        return redirect(url_for('job_status', job_id=job.id))
+    return render_template('submit_multimedia.html', hive=hive, form=form)
+
+
+@app.route('/uploads/<path:filename>')
+def serve_upload(filename):
+    """Serve an uploaded multimedia file to Worker Bees fetching it over HTTP.
+    Intentionally unauthenticated for MVP — Workers may be on different machines
+    and the URL is opaque (UUID-based). Revisit for production."""
+    from flask import send_from_directory
+    return send_from_directory(app.config['UPLOADS_DIR'], filename, as_attachment=False)
 
 
 @app.route('/job/<int:job_id>')

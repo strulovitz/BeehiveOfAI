@@ -4,6 +4,7 @@ forms.py — Web Forms for BeehiveOfAI
 """
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, PasswordField, SelectField, TextAreaField, FloatField, IntegerField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional
 
@@ -56,6 +57,23 @@ class SubmitJobForm(FlaskForm):
     nectar = TextAreaField('Your Task (Nectar)', validators=[DataRequired(), Length(min=20, max=10000)],
                            render_kw={"rows": 8, "placeholder": "Describe the AI task you want the Hive to process..."})
     submit = SubmitField('🍯 Submit Task to Hive')
+
+
+class SubmitMultimediaForm(FlaskForm):
+    """Upload a JPEG/MP3/MP4 and ask the Hive to analyze it.
+    The file is stored on the BeehiveOfAI server; Worker Bees fetch it over HTTP
+    from /uploads/<filename> and run the recursive sub-sampling pipeline locally.
+    """
+    media_type = SelectField('Media Type', choices=[
+        ('photo', '🖼️ Photo (JPEG)'),
+        ('sound', '🎙️ Sound (MP3)'),
+        ('video', '🎬 Video (MP4)'),
+    ], validators=[DataRequired()])
+    media_file = FileField('File (JPEG / MP3 / MP4)', validators=[
+        FileRequired(),
+        FileAllowed(['jpg', 'jpeg', 'mp3', 'mp4'], 'JPEG, MP3, or MP4 only'),
+    ])
+    submit = SubmitField('🍯 Submit Multimedia Task')
 
 
 class UpdatePhoneForm(FlaskForm):

@@ -22,6 +22,9 @@ env/
 *.sqlite
 *.sqlite3
 
+# Uploaded multimedia files (stored locally, fetched by Worker Bees over HTTP)
+uploads/
+
 # IDEs
 .idea/
 .vscode/
